@@ -1,0 +1,12 @@
+[    9100ms] [LOG] [handleInputChange] currentValue: thisisnotarealdomainxyz123.com lastValue:  @ http://localhost:5173/src/main.js?t=1778065996303:275
+[   12137ms] [LOG] [clearError] Called @ http://localhost:5173/src/main.js?t=1778065996303:55
+[   12137ms] [LOG] [clearError] Stack trace: Error
+    at clearError (http://localhost:5173/src/main.js?t=1778065996303:57:44)
+    at HTMLButtonElement.performDiagnosis (http://localhost:5173/src/main.js?t=1778065996303:209:3) @ http://localhost:5173/src/main.js?t=1778065996303:56
+[   12154ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
+    at getDomainRecords (http://localhost:5173/src/api/dns-resolver.js?t=1778065524046:261:15)
+    at async HTMLButtonElement.performDiagnosis (http://localhost:5173/src/main.js?t=1778065996303:214:21) @ http://localhost:5173/src/main.js?t=1778065996303:236
+[   12155ms] [LOG] [showError] Called with message: ドメインが見つかりません @ http://localhost:5173/src/main.js?t=1778065996303:29
+[   12155ms] [LOG] [showError] Before - classList: [error-message, hidden] @ http://localhost:5173/src/main.js?t=1778065996303:30
+[   12155ms] [LOG] [showError] After remove hidden - classList: [error-message] @ http://localhost:5173/src/main.js?t=1778065996303:41
+[   17156ms] [LOG] [showError] Timeout fired - adding hidden class @ http://localhost:5173/src/main.js?t=1778065996303:45

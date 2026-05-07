@@ -1,0 +1,21 @@
+[      93ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5177/favicon.ico:0
+[  104152ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
+    at getDomainRecords (http://localhost:5177/src/api/dns-resolver.js:261:15)
+    at async HTMLButtonElement.performDiagnosis (http://localhost:5177/src/main.js:205:21) @ http://localhost:5177/src/main.js:227
+[  184285ms] [LOG] Before remove hidden: error-message hidden @ :2
+[  184285ms] [LOG] After remove hidden: error-message @ :4
+[  200002ms] [LOG] === Calling showError manually === @ :23
+[  200002ms] [LOG] showError: removing hidden class @ :18
+[  200002ms] [LOG] showError: after remove, className = error-message @ :20
+[  200003ms] [LOG] Class changed: error-message @ :7
+[  232974ms] [LOG] === Setting up click monitor === @ :9
+[  249049ms] [LOG] Class changed: error-message hidden @ :7
+[  249049ms] [LOG] [MutationObserver] Class changed: error-message hidden @ :16
+[  249086ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
+    at getDomainRecords (http://localhost:5177/src/api/dns-resolver.js:261:15)
+    at async HTMLButtonElement.performDiagnosis (http://localhost:5177/src/main.js:205:21) @ http://localhost:5177/src/main.js:227
+[  249086ms] [LOG] Class changed: error-message @ :7
+[  249086ms] [LOG] [MutationObserver] Class changed: error-message @ :16
+[  254088ms] [LOG] Class changed: error-message hidden @ :7
+[  254088ms] [LOG] [MutationObserver] Class changed: error-message hidden @ :16
+[  306104ms] [LOG] === Setting up performDiagnosis counter === @ :7

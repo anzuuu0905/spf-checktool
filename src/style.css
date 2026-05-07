@@ -1,0 +1,708 @@
+/**
+ * メール配信診断ツール - Cursor デザインシステム
+ * Warm cream canvas with Cursor Orange CTAs
+ */
+
+/* リセット */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 基本スタイル - Cursor design tokens */
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+  color: #5a5852; /* {colors.body} - default running text */
+  background-color: #f7f7f4; /* {colors.canvas} - warm cream, not white */
+  font-weight: 400;
+  letter-spacing: -0.011em; /* Inter substitute adjustment for CursorGothic feel */
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 20px 20px; /* {spacing.section} top padding */
+}
+
+/* ヘッダー */
+header {
+  text-align: center;
+  margin-bottom: 80px; /* {spacing.section} */
+}
+
+h1 {
+  font-size: 48px; /* Between display-lg and display-mega for hero */
+  font-weight: 400; /* Magazine voice, never bold */
+  letter-spacing: -0.96px; /* -2% for display */
+  color: #26251e; /* {colors.ink} */
+  margin-bottom: 16px; /* {spacing.base} */
+  line-height: 1.15;
+}
+
+.catchphrase {
+  font-size: 16px; /* {typography.body-md} */
+  color: #807d72; /* {colors.muted} - sub-titles */
+  line-height: 1.5;
+  letter-spacing: 0.08px; /* {typography.body-tracked} */
+}
+
+/* 診断フォーム */
+.diagnosis-form {
+  background: #ffffff; /* {colors.surface-card} - pure white card on cream canvas */
+  padding: 32px; /* {spacing.xl} */
+  border-radius: 12px; /* {rounded.lg} for cards */
+  border: 1px solid #e6e5e0; /* {colors.hairline} - hairline-only depth */
+  box-shadow: none; /* No drop shadows in Cursor design */
+  margin-bottom: 48px; /* {spacing.xxl} */
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.domain-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: "JetBrains Mono", "Courier New", monospace; /* Code-like input */
+  border: 1px solid #e6e5e0; /* {colors.hairline} */
+  border-radius: 8px; /* {rounded.md} for inputs */
+  background-color: #ffffff; /* {colors.surface-card} */
+  color: #26251e; /* {colors.ink} */
+  transition: border-color 0.3s;
+}
+
+.domain-input:focus {
+  outline: none;
+  border-color: #cfcdc4; /* {colors.hairline-strong} */
+}
+
+.diagnose-button {
+  padding: 10px 18px; /* Cursor button padding */
+  font-size: 14px; /* {typography.button} */
+  font-weight: 500;
+  color: #ffffff; /* {colors.on-primary} */
+  background-color: #f54e00; /* {colors.primary} - Cursor Orange */
+  border: none;
+  border-radius: 8px; /* {rounded.md} for CTAs */
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-height: 40px; /* Standard CTA height */
+}
+
+.diagnose-button:hover:not(:disabled) {
+  background-color: #d04200; /* {colors.primary-active} */
+}
+
+.diagnose-button:disabled {
+  background-color: #a09c92; /* {colors.muted-soft} */
+  cursor: not-allowed;
+}
+
+/* エラーメッセージ */
+.error-message {
+  color: #cf2d56; /* {colors.semantic-error} */
+  font-size: 14px;
+  margin-top: 10px;
+  display: block;
+}
+
+.error-message.hidden {
+  display: none !important;
+}
+
+/* ローディング */
+.loading {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading.hidden {
+  display: none;
+}
+
+.spinner {
+  border: 3px solid #efeee8; /* {colors.hairline-soft} */
+  border-top: 3px solid #f54e00; /* {colors.primary} - Cursor Orange */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 診断結果 */
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.results.hidden {
+  display: none;
+}
+
+.result-card {
+  background: #ffffff; /* {colors.surface-card} */
+  padding: 24px; /* {spacing.lg} */
+  border-radius: 12px; /* {rounded.lg} for cards */
+  border: 1px solid #e6e5e0; /* {colors.hairline} */
+  box-shadow: none; /* No drop shadows */
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.result-header h2 {
+  font-size: 22px; /* {typography.display-sm} */
+  font-weight: 400; /* Magazine voice */
+  letter-spacing: -0.11px; /* Display negative tracking */
+  color: #26251e; /* {colors.ink} */
+  line-height: 1.3;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+}
+
+.status-success {
+  background-color: #1f8a65; /* {colors.semantic-success} */
+  color: white;
+}
+
+.status-error {
+  background-color: #cf2d56; /* {colors.semantic-error} */
+  color: white;
+}
+
+.status-warning {
+  background-color: #ff9800; /* Keep original warning color */
+  color: white;
+}
+
+.status-info {
+  background-color: #ffc107; /* Keep original info color */
+  color: #26251e; /* {colors.ink} */
+}
+
+.status-text {
+  font-weight: 600; /* {typography.title-sm} weight */
+  color: #26251e; /* {colors.ink} */
+}
+
+.explanation {
+  color: #5a5852; /* {colors.body} */
+  margin-bottom: 15px;
+  line-height: 1.5;
+  font-size: 16px; /* {typography.body-md} */
+}
+
+/* 詳細説明（アコーディオン） */
+.what-is {
+  border-top: 1px solid #efeee8; /* {colors.hairline-soft} */
+  padding-top: 15px;
+}
+
+.what-is summary {
+  cursor: pointer;
+  color: #f54e00; /* {colors.primary} - Cursor Orange for interactive elements */
+  font-weight: 500;
+  user-select: none;
+  font-size: 14px; /* {typography.body-sm} */
+}
+
+.what-is summary:hover {
+  text-decoration: underline;
+}
+
+.what-is-content {
+  margin-top: 10px;
+  color: #5a5852; /* {colors.body} */
+  line-height: 1.5;
+  font-size: 14px; /* {typography.body-sm} */
+}
+
+/* CTA セクション */
+.cta-section {
+  display: none;
+  text-align: center;
+  padding: 32px; /* {spacing.xl} */
+  background: #ffffff; /* {colors.surface-card} */
+  border-radius: 12px; /* {rounded.lg} */
+  border: 1px solid #e6e5e0; /* {colors.hairline} */
+  box-shadow: none;
+}
+
+.cta-message {
+  font-size: 18px; /* {typography.title-md} */
+  margin-bottom: 20px;
+  color: #5a5852; /* {colors.body} */
+  line-height: 1.4;
+}
+
+.cta-message.success-message {
+  color: #1f8a65; /* {colors.semantic-success} */
+  font-weight: 600;
+}
+
+.cta-button {
+  padding: 12px 20px; /* Larger CTA button padding */
+  font-size: 14px; /* {typography.button} */
+  font-weight: 500;
+  color: #ffffff; /* {colors.on-primary} */
+  background-color: #f54e00; /* {colors.primary} - Cursor Orange */
+  border: none;
+  border-radius: 8px; /* {rounded.md} for CTAs */
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-height: 44px; /* Larger CTA height */
+}
+
+.cta-button:hover {
+  background-color: #d04200; /* {colors.primary-active} */
+}
+
+.cta-link {
+  color: #f54e00; /* {colors.primary} */
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px; /* {typography.nav-link} */
+}
+
+.cta-link:hover {
+  text-decoration: underline;
+}
+
+/* レスポンシブ対応 - 診断フォーム専用 */
+@media (max-width: 768px) {
+  .input-group {
+    flex-direction: column;
+  }
+
+  .diagnose-button {
+    width: 100%;
+  }
+
+  .result-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status {
+    margin-top: 10px;
+  }
+
+  .diagnosis-form {
+    padding: 24px 20px;
+  }
+}
+
+/* Ultra-small screens */
+@media (max-width: 375px) {
+  .container {
+    padding: 32px 10px 10px; /* Minimal padding on very small screens */
+  }
+
+  h1 {
+    font-size: 28px;
+    letter-spacing: -0.56px;
+  }
+
+  .diagnosis-form {
+    padding: 20px 16px;
+  }
+
+  .section-title {
+    font-size: 22px; /* {typography.display-sm} */
+  }
+}
+
+/* 教育コンテンツセクション */
+.education-content {
+  max-width: 1200px;
+  margin: 80px auto 0; /* {spacing.section} */
+  padding: 0 20px;
+}
+
+.section-title {
+  font-size: 36px; /* {typography.display-lg} */
+  font-weight: 400; /* Magazine voice */
+  letter-spacing: -0.72px; /* Display negative tracking */
+  color: #26251e; /* {colors.ink} */
+  margin-bottom: 48px; /* {spacing.xxl} */
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* 3プロトコルカード */
+.protocol-section {
+  margin-bottom: 80px; /* {spacing.section} */
+}
+
+.protocol-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px; /* {spacing.lg} */
+}
+
+.protocol-card {
+  background: #ffffff; /* {colors.surface-card} */
+  padding: 32px 24px; /* {spacing.xl} / {spacing.lg} */
+  border-radius: 12px; /* {rounded.lg} */
+  border: 1px solid #e6e5e0; /* {colors.hairline} */
+  text-align: center;
+  transition: border-color 0.2s ease;
+}
+
+.protocol-card:hover {
+  border-color: #cfcdc4; /* {colors.hairline-strong} */
+}
+
+.protocol-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px; /* {spacing.md} */
+  color: #f54e00; /* {colors.primary} */
+}
+
+.protocol-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.protocol-card h3 {
+  font-size: 22px; /* {typography.display-sm} */
+  font-weight: 400; /* Magazine voice */
+  letter-spacing: -0.11px;
+  color: #26251e; /* {colors.ink} */
+  margin-bottom: 8px; /* {spacing.xs} */
+  line-height: 1.3;
+}
+
+.protocol-role {
+  font-size: 14px; /* Increased from 11px for better readability */
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.88px;
+  color: #f54e00; /* {colors.primary} - Cursor Orange */
+  margin-bottom: 16px; /* {spacing.base} */
+  text-align: center;
+}
+
+.protocol-description {
+  font-size: 14px; /* {typography.body-sm} */
+  color: #5a5852; /* {colors.body} */
+  line-height: 1.5;
+  margin-bottom: 16px; /* {spacing.base} */
+  text-align: left; /* Left-align description text */
+}
+
+.protocol-tagline {
+  font-size: 13px; /* {typography.caption} */
+  color: #807d72; /* {colors.muted} */
+  font-style: normal;
+  padding-top: 12px; /* {spacing.sm} */
+  border-top: 1px solid #efeee8; /* {colors.hairline-soft} */
+}
+
+/* アナロジーカード */
+.analogy-section {
+  margin-bottom: 80px; /* {spacing.section} */
+}
+
+.analogy-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px; /* {spacing.lg} */
+}
+
+.analogy-card {
+  background: #ffffff; /* {colors.surface-card} - same as protocol cards for consistency */
+  padding: 32px 24px; /* Same padding as protocol cards */
+  border-radius: 12px; /* {rounded.lg} - same as protocol cards */
+  border: 1px solid #e6e5e0; /* {colors.hairline} - same as protocol cards */
+  text-align: center; /* Center align like protocol cards */
+  transition: border-color 0.2s ease;
+}
+
+.analogy-card:hover {
+  border-color: #cfcdc4; /* {colors.hairline-strong} */
+}
+
+.analogy-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center icon like protocol cards */
+  width: 72px; /* Same size as protocol icons */
+  height: 72px;
+  margin: 0 auto 20px; /* Center and same margin as protocol cards */
+  color: #f54e00; /* {colors.primary} - Cursor Orange for consistency */
+}
+
+.analogy-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.analogy-card h3 {
+  font-size: 22px; /* {typography.display-sm} - same as protocol cards */
+  font-weight: 400; /* Magazine voice */
+  letter-spacing: -0.11px;
+  color: #26251e; /* {colors.ink} */
+  margin-bottom: 16px; /* Increased spacing for better hierarchy */
+  line-height: 1.3;
+  text-align: center;
+}
+
+.analogy-card p {
+  font-size: 14px; /* {typography.body-sm} */
+  color: #5a5852; /* {colors.body} */
+  line-height: 1.5;
+  text-align: left; /* Left-align description like protocol cards */
+}
+
+/* なぜ必要？カード（2x2グリッド） */
+.why-section {
+  margin-bottom: 80px; /* {spacing.section} */
+}
+
+.why-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px; /* {spacing.lg} - consistent with other card grids */
+}
+
+.why-card {
+  background: #ffffff; /* {colors.surface-card} */
+  padding: 32px 24px; /* Same padding as protocol cards */
+  border-radius: 12px; /* {rounded.lg} */
+  border: 1px solid #e6e5e0; /* {colors.hairline} */
+  text-align: center; /* Center align like protocol cards */
+  transition: border-color 0.2s ease;
+}
+
+.why-card:hover {
+  border-color: #cfcdc4; /* {colors.hairline-strong} */
+}
+
+.why-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px; /* Same size as protocol icons */
+  height: 72px;
+  margin: 0 auto 20px; /* Center and same margin as protocol cards */
+  color: #f54e00; /* {colors.primary} - Cursor Orange for consistency */
+}
+
+.why-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.why-card h3 {
+  font-size: 22px; /* {typography.display-sm} - same as protocol cards */
+  font-weight: 400; /* Magazine voice */
+  letter-spacing: -0.11px;
+  color: #26251e; /* {colors.ink} */
+  margin-bottom: 16px; /* Consistent spacing */
+  line-height: 1.3;
+  text-align: center;
+}
+
+.why-card p {
+  font-size: 14px; /* {typography.body-sm} */
+  color: #5a5852; /* {colors.body} */
+  line-height: 1.5;
+  text-align: left; /* Left-align description like protocol cards */
+}
+
+/* 優先順位ガイド */
+.priority-section {
+  margin-bottom: 80px; /* {spacing.section} */
+}
+
+.priority-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* {spacing.md} */
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.priority-item {
+  display: flex;
+  gap: 24px; /* {spacing.lg} */
+  align-items: flex-start;
+  background: #ffffff; /* {colors.surface-card} */
+  padding: 24px 32px; /* {spacing.lg} / {spacing.xl} */
+  border-radius: 8px; /* {rounded.md} */
+  border: 1px solid #e6e5e0; /* {colors.hairline} */
+  border-left: 3px solid #e6e5e0;
+  /* Removed cursor and hover effects - not interactive */
+}
+
+.priority-item.priority-high {
+  border-left-color: #f54e00; /* {colors.primary} - Cursor Orange */
+  background: #fff9f7; /* Subtle warm tint */
+}
+
+.priority-item.priority-medium {
+  border-left-color: #807d72; /* {colors.muted} - medium priority */
+  background: #fafaf7; /* Very subtle tint */
+}
+
+.priority-item.priority-normal {
+  border-left-color: #e6e5e0; /* {colors.hairline} - normal priority */
+  background: #ffffff; /* Pure white */
+}
+
+.priority-number {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f7f7f4; /* {colors.canvas} */
+  border: 2px solid #e6e5e0; /* {colors.hairline} */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #26251e; /* {colors.ink} */
+}
+
+.priority-content h3 {
+  font-size: 18px; /* {typography.title-md} */
+  font-weight: 600;
+  color: #26251e; /* {colors.ink} */
+  margin-bottom: 8px;
+}
+
+.priority-content p {
+  font-size: 14px; /* {typography.body-sm} */
+  color: #5a5852; /* {colors.body} */
+  line-height: 1.6;
+}
+
+/* レスポンシブ対応（768px breakpoint） */
+@media (max-width: 768px) {
+  .container {
+    padding: 48px 15px 15px; /* Reduced top padding on mobile */
+  }
+
+  h1 {
+    font-size: 32px; /* Smaller hero on mobile */
+    letter-spacing: -0.64px;
+  }
+
+  header {
+    margin-bottom: 48px; /* {spacing.xxl} */
+  }
+
+  .education-content {
+    padding: 0 15px;
+    margin-top: 48px; /* {spacing.xxl} */
+  }
+
+  .section-title {
+    font-size: 26px; /* {typography.display-md} */
+    letter-spacing: -0.325px;
+    margin-bottom: 32px; /* {spacing.xl} */
+  }
+
+  .protocol-cards,
+  .analogy-cards {
+    grid-template-columns: 1fr;
+    gap: 16px; /* {spacing.base} */
+  }
+
+  .protocol-card {
+    padding: 24px 20px;
+  }
+
+  .protocol-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px; /* Ensure center alignment on mobile */
+  }
+
+  .analogy-card {
+    text-align: center; /* Center align on mobile for better appearance */
+  }
+
+  .analogy-icon {
+    margin: 0 auto 12px; /* Center icon on mobile */
+    justify-content: center;
+  }
+
+  .why-cards {
+    grid-template-columns: 1fr;
+    gap: 20px; /* {spacing.md} */
+  }
+
+  .why-card {
+    padding: 24px; /* {spacing.lg} */
+  }
+
+  .priority-item {
+    flex-direction: row; /* Keep row layout on mobile */
+    align-items: flex-start;
+    gap: 12px; /* Smaller gap for mobile */
+    padding: 20px; /* {spacing.md} */
+  }
+
+  .priority-number {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    flex-shrink: 0; /* Prevent number from shrinking */
+    /* Remove margin: 0 auto to keep left alignment */
+  }
+
+  .priority-content {
+    flex: 1; /* Take up remaining space */
+  }
+
+  .priority-content h3 {
+    display: inline-block; /* Allow title to flow with number on same line */
+    margin-top: 4px; /* Align with number vertically */
+  }
+}
+
+/* ユーティリティ */
+.hidden {
+  display: none !important;
+}

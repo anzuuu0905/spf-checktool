@@ -1,0 +1,12 @@
+[   10427ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
+    at getDomainRecords (http://localhost:5175/src/api/dns-resolver.js:261:15)
+    at async HTMLButtonElement.performDiagnosis (http://localhost:5175/src/main.js:185:21) @ http://localhost:5175/src/main.js:207
+[  100854ms] [LOG] Error message text changed:  @ :8
+[  100854ms] [LOG] Error message class changed: error-message hidden @ :5
+[  105044ms] [LOG] Error message class changed: error-message hidden @ :5
+[  105060ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
+    at getDomainRecords (http://localhost:5175/src/api/dns-resolver.js:261:15)
+    at async HTMLButtonElement.performDiagnosis (http://localhost:5175/src/main.js:185:21) @ http://localhost:5175/src/main.js:207
+[  105060ms] [LOG] Error message text changed: ドメインが見つかりません @ :8
+[  105060ms] [LOG] Error message class changed: error-message @ :5
+[  110062ms] [LOG] Error message class changed: error-message hidden @ :5

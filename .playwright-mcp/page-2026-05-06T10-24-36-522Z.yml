@@ -1,0 +1,42 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - heading "メール配信診断ツール" [level=1] [ref=e4]
+    - paragraph [ref=e5]: あなたの会社のメールは正しく届いていますか？
+  - main [ref=e6]:
+    - generic [ref=e8]:
+      - textbox "ドメイン名を入力" [ref=e9]:
+        - /placeholder: "例: example.com"
+        - text: google.com
+      - button "診断する" [ref=e10] [cursor=pointer]
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - heading "SPF（差出人チェック機能）" [level=2] [ref=e15]
+          - generic [ref=e16]:
+            - generic [ref=e17]: ✓
+            - generic [ref=e18]: 設定済み
+        - group [ref=e20]:
+          - generic "SPFとは何ですか？" [ref=e21] [cursor=pointer]
+          - paragraph [ref=e44]: 会社の看板を勝手に使った偽メールをブロックする機能。郵便局で差出人をチェックするイメージ
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - heading "DKIM（会社の実印機能）" [level=2] [ref=e24]
+          - generic [ref=e25]:
+            - generic [ref=e26]: ⚠
+            - generic [ref=e27]: 未設定
+        - generic [ref=e28]:
+          - paragraph [ref=e29]: メールが途中で書き換えられても気づかれず、「振込先を変更しました」という偽の内容に改ざんされる危険があります。
+          - group [ref=e30]:
+            - generic "DKIMとは何ですか？" [active] [ref=e31] [cursor=pointer]
+            - paragraph [ref=e45]: メールに会社の実印を押す機能。割印のように改ざん防止する
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - heading "DMARC（最終防衛ライン）" [level=2] [ref=e34]
+          - generic [ref=e35]:
+            - generic [ref=e36]: ✓
+            - generic [ref=e37]: 設定済み
+        - group [ref=e39]:
+          - generic "DMARCとは何ですか？" [ref=e40] [cursor=pointer]
+      - generic [ref=e41]:
+        - paragraph [ref=e42]: 設定には専門的な知識が必要です
+        - button "専門家に相談する" [ref=e43] [cursor=pointer]

@@ -1,0 +1,5 @@
+[   11143ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
+    at getDomainRecords (http://localhost:5177/src/api/dns-resolver.js:261:15)
+    at async HTMLButtonElement.performDiagnosis (http://localhost:5177/src/main.js?t=1778066652348:207:21) @ http://localhost:5177/src/main.js?t=1778066652348:229
+[   11143ms] [LOG] showError called with: ドメインが見つかりません @ http://localhost:5177/src/main.js?t=1778066652348:29
+[   11143ms] [LOG] Error message element classes after remove: error-message @ http://localhost:5177/src/main.js?t=1778066652348:38

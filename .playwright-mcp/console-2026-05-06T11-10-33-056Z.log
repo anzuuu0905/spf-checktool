@@ -1,0 +1,3 @@
+[    8212ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
+    at getDomainRecords (http://localhost:5173/src/api/dns-resolver.js?t=1778065524046:261:15)
+    at async HTMLButtonElement.performDiagnosis (http://localhost:5173/src/main.js?t=1778065814373:185:21) @ http://localhost:5173/src/main.js?t=1778065814373:207

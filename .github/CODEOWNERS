@@ -1,0 +1,22 @@
+# Code Owners
+# レビュー責任者の自動アサイン設定
+
+# デフォルト: すべてのファイル
+* @yourusername
+
+# ドキュメント
+/docs/ @yourusername
+*.md @yourusername
+
+# GitHub 設定
+/.github/ @yourusername
+
+# ソースコード
+/src/ @yourusername
+
+# テスト
+/tests/ @yourusername
+
+# 設定ファイル
+package.json @yourusername
+*.config.js @yourusername
