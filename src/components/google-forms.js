@@ -67,7 +67,7 @@ export function createOrUpdateFormsArea(hasProblems, targetContainer) {
 
   // 見出しと説明文の設定
   const heading = hasProblems
-    ? '設定方法がわからない方、<br>専門家に相談したい方へ'
+    ? '設定方法がわからない方<br>専門家に相談したい方'
     : 'メール認証結果は良好です。';
 
   const description = hasProblems
@@ -96,14 +96,16 @@ export function createOrUpdateFormsArea(hasProblems, targetContainer) {
         <h2 class="forms-heading">${heading}</h2>
         <p class="forms-description">${description.replace(/\n/g, '<br>')}</p>
         <div class="forms-button-container">
-          <a
-            href="${GOOGLE_FORMS_URL}"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="forms-button"
-            aria-label="${ariaLabel}">
-            ${buttonText}
-          </a>
+          <div class="btn-animation-wrapper">
+            <a
+              href="${GOOGLE_FORMS_URL}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="forms-button"
+              aria-label="${ariaLabel}">
+              ${buttonText}
+            </a>
+          </div>
         </div>
       </div>
     `;
@@ -125,19 +127,6 @@ export function createOrUpdateFormsArea(hasProblems, targetContainer) {
 
     // CSS animationがtriggerされるよう、小さな遅延を入れる
     // (DOMに追加後にanimationがスタートするため)
-
-    // iframeのロード完了処理
-    const iframe = formsArea.querySelector('#google-forms-iframe');
-    const loadingMsg = formsArea.querySelector('.forms-loading');
-
-    iframe.addEventListener('load', () => {
-      loadingMsg.style.display = 'none';
-    });
-
-    iframe.addEventListener('error', () => {
-      loadingMsg.textContent = 'フォームの読み込みに失敗しました。ページをリロードしてください';
-      loadingMsg.classList.add('error');
-    });
   } else {
     // 既存フォームの更新（見出しと説明文のみ）
     const headingElement = formsArea.querySelector('.forms-heading');
@@ -173,10 +162,18 @@ export function scrollToFormsArea(delay = 500) {
   setTimeout(() => {
     const formsArea = document.getElementById('google-forms-area');
     if (formsArea) {
-      formsArea.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+      // SPF結果が見える位置にスクロール（診断結果の下部）
+      const resultsSection = document.getElementById('result-section');
+      if (resultsSection) {
+        const rect = resultsSection.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetPosition = scrollTop + rect.top;
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
     }
   }, delay);
 }

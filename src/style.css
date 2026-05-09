@@ -810,7 +810,7 @@ h1 {
   font-weight: 400; /* Magazine voice */
   letter-spacing: -0.72px;
   line-height: 1.2;
-  color: #26251e; /* {colors.ink} */
+  color: #f54e00; /* {colors.primary} - Cursor Orange for emphasis */
   margin-bottom: 24px; /* {spacing.lg} */
   text-align: center; /* Center align for better visual balance */
 }
@@ -832,8 +832,16 @@ h1 {
   text-align: center;
 }
 
+.btn-animation-wrapper {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px; /* Match button border radius */
+}
+
 .forms-button {
   display: inline-block;
+  position: relative;
   padding: 14px 32px; /* Larger padding for prominence */
   font-size: 16px; /* {typography.button} */
   font-weight: 500;
@@ -843,18 +851,50 @@ h1 {
   border-radius: 8px; /* {rounded.md} */
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   min-height: 48px; /* Larger touch target */
   line-height: 1.5;
+}
+
+.forms-button::before {
+  position: absolute;
+  content: '';
+  display: inline-block;
+  top: -180px;
+  left: 0;
+  width: 30px;
+  height: 100%;
+  background-color: #ffffff;
+  animation: btn_glow 2.5s ease-in-out infinite;
+}
+
+@keyframes btn_glow {
+  0% {
+    transform: scale(0) rotate(45deg);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(0) rotate(45deg);
+    opacity: 0.5;
+  }
+  81% {
+    transform: scale(4) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(50) rotate(45deg);
+    opacity: 0;
+  }
 }
 
 .forms-button:hover {
   background-color: #d94400; /* Darker orange on hover */
   box-shadow: 0 4px 12px rgba(245, 78, 0, 0.3);
+  transform: scale(1.05);
 }
 
 .forms-button:active {
-  transform: translateY(0);
+  transform: scale(0.95);
   box-shadow: 0 2px 6px rgba(245, 78, 0, 0.2);
 }
 

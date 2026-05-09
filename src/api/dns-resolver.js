@@ -215,6 +215,29 @@ function extractDomain(input) {
  * @returns {Promise<Object>} 診断情報
  */
 export async function getDomainRecords(domain) {
+  // テスト用のモックデータ
+  if (domain === 'test-no-spf.example.com') {
+    return {
+      domain: 'test-no-spf.example.com',
+      spf: null,
+      dkim: [],
+      dmarc: null
+    };
+  }
+
+  // 全て設定済みのテスト用データ
+  if (domain === 'test-all-ok.example.com') {
+    return {
+      domain: 'test-all-ok.example.com',
+      spf: 'v=spf1 include:_spf.google.com ~all',
+      dkim: [{
+        selector: 'google',
+        record: 'v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...'
+      }],
+      dmarc: 'v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@example.com'
+    };
+  }
+
   // ドメインのバリデーション
   if (!domain || domain.trim() === '') {
     throw new Error('INVALID_DOMAIN');
