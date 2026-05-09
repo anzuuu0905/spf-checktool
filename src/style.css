@@ -61,6 +61,15 @@ h1 {
   margin-right: auto;
 }
 
+.form-instruction {
+  font-size: 16px; /* {typography.body-md} */
+  font-weight: 400;
+  line-height: 1.6;
+  color: #5a5852; /* {colors.body} */
+  margin-bottom: 16px; /* {spacing.md} */
+  text-align: center;
+}
+
 .input-group {
   display: flex;
   gap: 10px;
@@ -147,7 +156,19 @@ h1 {
 .results {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px; /* {spacing.lg} - increased gap */
+  padding: 48px;
+  background: #ffffff; /* {colors.surface-card} */
+  border-radius: 12px; /* {rounded.lg} */
+  border: 1px solid #e6e5e0; /* {colors.hairline} */
+  max-width: 900px;
+  margin: 64px auto;
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.results:hover {
+  border-color: #cfcdc4; /* {colors.hairline-strong} */
 }
 
 .results.hidden {
@@ -255,27 +276,37 @@ h1 {
 .cta-section {
   display: none;
   text-align: center;
-  padding: 32px; /* {spacing.xl} */
-  background: #ffffff; /* {colors.surface-card} */
+  padding: 56px 48px; /* Increased padding for better spacing */
+  background: #26251e; /* {colors.ink} - inverted for emphasis */
   border-radius: 12px; /* {rounded.lg} */
-  border: 1px solid #e6e5e0; /* {colors.hairline} */
+  border: none; /* No border for inverted section */
   box-shadow: none;
+  max-width: 900px;
+  margin: 80px auto;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.cta-section:hover {
+  transform: translateY(-2px);
 }
 
 .cta-message {
-  font-size: 18px; /* {typography.title-md} */
-  margin-bottom: 20px;
-  color: #5a5852; /* {colors.body} */
+  font-size: 22px; /* {typography.display-sm} */
+  margin-bottom: 28px;
+  color: #f7f7f4; /* {colors.canvas} - light text on dark background */
   line-height: 1.4;
+  font-weight: 400;
+  letter-spacing: -0.11px;
 }
 
 .cta-message.success-message {
-  color: #1f8a65; /* {colors.semantic-success} */
-  font-weight: 600;
+  color: #9fc9a2; /* Mint green for success on dark */
+  font-weight: 400;
 }
 
 .cta-button {
-  padding: 12px 20px; /* Larger CTA button padding */
+  padding: 14px 32px; /* Generous padding for prominence */
   font-size: 14px; /* {typography.button} */
   font-weight: 500;
   color: #ffffff; /* {colors.on-primary} */
@@ -283,12 +314,16 @@ h1 {
   border: none;
   border-radius: 8px; /* {rounded.md} for CTAs */
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.2s ease;
   min-height: 44px; /* Larger CTA height */
+  display: inline-block;
+  box-shadow: 0 2px 8px rgba(245, 78, 0, 0.25);
 }
 
 .cta-button:hover {
   background-color: #d04200; /* {colors.primary-active} */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 78, 0, 0.35);
 }
 
 .cta-link {
@@ -705,4 +740,268 @@ h1 {
 /* ユーティリティ */
 .hidden {
   display: none !important;
+}
+
+/* Google Forms統合セクション - Cursor Design System */
+.google-forms-section {
+  margin: 80px auto; /* {spacing.section} + center align */
+  max-width: 1200px; /* Match container max-width */
+  padding: 0; /* Remove padding - use inner container */
+  background: transparent; /* Use canvas background */
+  border-radius: 0; /* Remove border radius */
+  border: none; /* Remove border */
+  opacity: 0;
+  animation: fadeInUp 0.3s ease-out forwards;
+  animation-delay: 0.1s; /* Small delay for better perception */
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.forms-container {
+  background: #ffffff; /* {colors.surface-card} */
+  border-radius: 12px; /* {rounded.lg} */
+  border: 1px solid #e6e5e0; /* {colors.hairline} */
+  padding: 48px; /* {spacing.xxl} */
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Added soft shadow for depth */
+}
+
+.forms-container:hover {
+  border-color: #cfcdc4; /* {colors.hairline-strong} on hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12); /* Slightly stronger shadow on hover */
+  transform: translateY(-1px); /* Subtle lift on hover */
+}
+
+/* Add subtle gradient overlay for depth */
+.forms-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    #f54e00 50%,
+    transparent 100%);
+  opacity: 0;
+  border-radius: 12px 12px 0 0;
+  transition: opacity 0.3s ease;
+}
+
+.forms-container:hover::before {
+  opacity: 0.4;
+}
+
+.forms-heading {
+  font-size: 36px; /* Match other section headings */
+  font-weight: 400; /* Magazine voice */
+  letter-spacing: -0.72px;
+  line-height: 1.2;
+  color: #26251e; /* {colors.ink} */
+  margin-bottom: 24px; /* {spacing.lg} */
+  text-align: center; /* Center align for better visual balance */
+}
+
+.forms-description {
+  font-size: 16px; /* {typography.body-md} */
+  font-weight: 400;
+  line-height: 1.6;
+  color: #5a5852; /* {colors.body} */
+  margin-bottom: 32px; /* {spacing.xl} */
+  letter-spacing: 0.08px; /* {typography.body-tracked} */
+  text-align: center; /* Center align */
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.forms-button-container {
+  text-align: center;
+}
+
+.forms-button {
+  display: inline-block;
+  padding: 14px 32px; /* Larger padding for prominence */
+  font-size: 16px; /* {typography.button} */
+  font-weight: 500;
+  color: #ffffff; /* {colors.on-primary} */
+  background-color: #f54e00; /* {colors.primary} - Cursor Orange */
+  border: none;
+  border-radius: 8px; /* {rounded.md} */
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  min-height: 48px; /* Larger touch target */
+  line-height: 1.5;
+}
+
+.forms-button:hover {
+  background-color: #d94400; /* Darker orange on hover */
+  box-shadow: 0 4px 12px rgba(245, 78, 0, 0.3);
+}
+
+.forms-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(245, 78, 0, 0.2);
+}
+
+.forms-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #807d72; /* {colors.muted} */
+  font-size: 14px; /* {typography.body-sm} */
+  font-weight: 500;
+  text-align: center;
+  z-index: 1;
+  letter-spacing: 0.08px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Add loading spinner animation */
+.forms-loading::before {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 2px solid #efeee8;
+  border-top-color: #f54e00; /* {colors.primary} */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.forms-loading.error {
+  color: #cf2d56; /* {colors.semantic-error} */
+  font-weight: 500;
+  padding: 32px; /* {spacing.xl} */
+  background: #ffffff; /* White background for error state */
+  border-radius: 8px; /* {rounded.md} */
+  border: 1px solid #cf2d56;
+  max-width: 400px;
+}
+
+.forms-loading.error::before {
+  display: none; /* Hide spinner for error state */
+}
+
+#google-forms-iframe {
+  width: 100%;
+  height: 700px;
+  border: none;
+  display: block;
+  background: #ffffff;
+}
+
+/* 診断結果セクションの状態クラス */
+.results.has-issues {
+  position: relative;
+}
+
+.results.no-issues {
+  position: relative;
+}
+
+/* Google Formsレスポンシブデザイン - Cursor Design System */
+@media (min-width: 1024px) {
+  .google-forms-section {
+    padding: 0 20px; /* Add horizontal padding for large screens */
+  }
+
+  .forms-container {
+    max-width: 900px;
+    padding: 56px 64px; /* Generous padding on desktop */
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .google-forms-section {
+    margin: 48px auto; /* {spacing.xxl} */
+    padding: 0 20px; /* Add horizontal padding */
+  }
+
+  .forms-container {
+    padding: 40px; /* Moderate padding on tablet */
+    max-width: 100%;
+  }
+
+  .forms-heading {
+    font-size: 32px; /* Slightly smaller than desktop */
+    letter-spacing: -0.64px; /* Maintain negative letter-spacing */
+    line-height: 1.25;
+  }
+
+  .forms-description {
+    font-size: 16px; /* {typography.body-md} */
+    max-width: 500px;
+  }
+
+  .forms-iframe-container {
+    min-height: 650px;
+  }
+
+  #google-forms-iframe {
+    height: 650px;
+  }
+}
+
+@media (max-width: 767px) {
+  .google-forms-section {
+    margin: 48px auto; /* {spacing.xxl} */
+    padding: 0 16px; /* Smaller horizontal padding on mobile */
+  }
+
+  .forms-container {
+    padding: 32px 24px; /* Compact padding on mobile */
+    border-radius: 8px; /* {rounded.md} - slightly smaller on mobile */
+  }
+
+  .forms-heading {
+    font-size: 24px; /* Mobile-optimized size */
+    letter-spacing: -0.24px; /* Maintain negative letter-spacing */
+    line-height: 1.3;
+    margin-bottom: 20px;
+  }
+
+  .forms-description {
+    font-size: 14px; /* {typography.body-sm} */
+    margin-bottom: 32px; /* {spacing.xl} */
+    line-height: 1.6;
+  }
+
+  .forms-iframe-container {
+    min-height: 600px;
+    border-radius: 6px; /* {rounded.sm} */
+  }
+
+  #google-forms-iframe {
+    height: 600px;
+  }
+
+  /* Adjust the loading spinner for mobile */
+  .forms-loading::before {
+    width: 28px;
+    height: 28px;
+  }
 }
