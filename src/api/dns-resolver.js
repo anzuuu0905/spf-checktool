@@ -135,28 +135,62 @@ export async function getDKIMRecords(domain, customSelector = null) {
     ? [customSelector]
     : checkCommonSelectors();
 
-  const results = await Promise.all(
+  const probes = await Promise.all(
     selectors.map(async (selector) => {
       try {
         const dkimDomain = `${selector}._domainkey.${domain}`;
         const records = await queryDNS(dkimDomain, 'TXT');
 
         if (records.length === 0) {
-          return null;
+          return { selector, record: null, found: false };
         }
 
         // v=DKIM1 を含むレコードのみ DKIM として採用（RFC 6376）
         const dkimRecord = records.find(record => /v\s*=\s*DKIM1/i.test(record));
-
-        return dkimRecord ? { selector, record: dkimRecord } : null;
+        return dkimRecord
+          ? { selector, record: dkimRecord, found: true }
+          : { selector, record: null, found: false };
       } catch {
         // 個別セレクターのエラーは無視（「迷ったら未検出」）
-        return null;
+        return { selector, record: null, found: false };
       }
     })
   );
 
-  return results.filter(r => r !== null);
+  // 後方互換: filter で found のみを返しつつ、searched 配列をプロパティに付与
+  const found = probes.filter(p => p.found).map(p => ({ selector: p.selector, record: p.record }));
+  found.searchedSelectors = probes.map(p => ({ selector: p.selector, found: p.found }));
+  return found;
+}
+
+/**
+ * MXレコードを取得（プロバイダー推定用）
+ * @param {string} domain - ドメイン名
+ * @returns {Promise<Array<string>>} MXホスト名の配列（priority昇順）
+ */
+export async function getMXRecords(domain) {
+  try {
+    const url = `${DNS_API_BASE}?name=${encodeURIComponent(domain)}&type=MX`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const response = await fetch(url, { signal: controller.signal, headers: { 'Accept': 'application/json' } });
+    clearTimeout(timeoutId);
+    if (!response.ok) return [];
+    const data = await response.json();
+    if (!data.Answer) return [];
+    return data.Answer
+      .filter(a => a.type === 15)
+      .map(a => {
+        const parts = (a.data || '').trim().split(/\s+/);
+        const priority = parseInt(parts[0], 10) || 0;
+        const exchange = (parts[1] || '').replace(/\.$/, '');
+        return { priority, exchange };
+      })
+      .sort((a, b) => a.priority - b.priority)
+      .map(m => m.exchange);
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -272,17 +306,19 @@ export async function getDomainRecords(domain, customSelector = null) {
 
   try {
     // 並列でDNSクエリを実行
-    const [spfRecord, dkimRecords, dmarcRecord] = await Promise.all([
+    const [spfRecord, dkimRecords, dmarcRecord, mxRecords] = await Promise.all([
       getSPFRecord(normalizedDomain),
       getDKIMRecords(normalizedDomain, customSelector),
-      getDMARCRecord(normalizedDomain)
+      getDMARCRecord(normalizedDomain),
+      getMXRecords(normalizedDomain)
     ]);
 
     return {
       domain: normalizedDomain,
       spf: spfRecord,
       dkim: dkimRecords,
-      dmarc: dmarcRecord
+      dmarc: dmarcRecord,
+      mx: mxRecords
     };
   } catch (error) {
     // エラーメッセージをユーザーフレンドリーに変換

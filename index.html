@@ -131,6 +131,24 @@
           </div>
         </section>
 
+        <!-- GMAIL/YAHOO ガイドライン準拠チェック -->
+        <section class="gmail-compliance" id="gmail-compliance">
+          <header class="gc-head">
+            <h3 class="gc-title">
+              <span class="gc-tag">🏷️ Gmail / Yahoo ガイドライン</span>
+              <span class="gc-status" id="gc-status"></span>
+            </h3>
+            <p class="gc-note">2024年2月施行のメール送信者要件への適合状況</p>
+          </header>
+          <ul class="gc-list" id="gc-list"></ul>
+        </section>
+
+        <!-- 改善ポイント（問題ありの場合のみ表示） -->
+        <section class="tips-block" id="tips-block" hidden>
+          <h3 class="tips-title">💡 改善ポイント</h3>
+          <ul class="tips-list" id="tips-list"></ul>
+        </section>
+
         <!-- RESULT CARDS -->
         <div class="results-grid">
           <!-- SPF結果カード -->
@@ -186,6 +204,19 @@
               <p class="explain"></p>
               <p class="explain-note" hidden></p>
               <div class="record-block" hidden></div>
+              <!-- DKIM 鍵長表示 -->
+              <div class="meta-row" id="dkim-keylen-row" hidden>
+                <span class="meta-label">公開鍵の長さ</span>
+                <span class="meta-value" id="dkim-keylen-value"></span>
+              </div>
+              <!-- DKIM 検索セレクター一覧（折りたたみ） -->
+              <details class="searched-selectors" id="dkim-searched-block" hidden>
+                <summary><span class="ss-summary-text">検索したセレクター一覧を見る</span></summary>
+                <div class="ss-body">
+                  <p class="ss-note">主要メールサービスのセレクター名を順番に DNS で検索しました。✅ は見つかったセレクターです。</p>
+                  <ul class="ss-list" id="dkim-searched-list"></ul>
+                </div>
+              </details>
               <div class="why-block" hidden>
                 <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
                 <p class="why-body"></p>
@@ -218,6 +249,19 @@
             <div class="result-body">
               <p class="explain"></p>
               <div class="record-block" hidden></div>
+              <!-- DMARC ポリシー強度メーター -->
+              <div class="policy-meter" id="dmarc-policy-meter" hidden>
+                <div class="pm-header">
+                  <span class="pm-label">ポリシー強度</span>
+                  <span class="pm-value" id="pm-value"></span>
+                </div>
+                <div class="pm-bars" aria-hidden="true">
+                  <span class="pm-bar" data-level="1"></span>
+                  <span class="pm-bar" data-level="2"></span>
+                  <span class="pm-bar" data-level="3"></span>
+                </div>
+                <p class="pm-note" id="pm-note"></p>
+              </div>
               <div class="why-block" hidden>
                 <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
                 <p class="why-body"></p>

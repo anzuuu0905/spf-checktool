@@ -599,6 +599,256 @@ body {
 .why-block .why-cta:hover svg { transform: translateX(2px); }
 
 /* ==========================================================
+   DKIM 鍵長行 (meta-row)
+   ========================================================== */
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.meta-row.is-ok    { border-color: rgba(22,163,74,0.25); background: var(--green-soft); }
+.meta-row.is-warn  { border-color: rgba(217,119,6,0.28); background: var(--amber-soft); }
+.meta-row.is-error { border-color: rgba(192,57,43,0.25); background: var(--red-soft); }
+.meta-row .meta-label { color: var(--body); font-weight: 500; }
+.meta-row .meta-value { color: var(--ink); }
+.meta-row .meta-value strong { font-weight: 700; }
+
+/* ==========================================================
+   DKIM 検索セレクター一覧 (.searched-selectors)
+   ========================================================== */
+.searched-selectors {
+  margin-bottom: 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+}
+.searched-selectors > summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--body);
+  font-weight: 500;
+  list-style: none;
+  user-select: none;
+}
+.searched-selectors > summary::-webkit-details-marker { display: none; }
+.searched-selectors > summary::before {
+  content: "▸ ";
+  display: inline-block;
+  margin-right: 4px;
+  transition: transform 0.15s;
+}
+.searched-selectors[open] > summary::before { transform: rotate(90deg); }
+.searched-selectors > summary:hover { color: var(--ink); }
+.ss-body {
+  padding: 0 14px 14px;
+}
+.ss-note {
+  font-size: 12.5px;
+  color: var(--body);
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+.ss-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 6px 12px;
+}
+.ss-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.ss-item.is-found {
+  color: var(--green-text);
+  font-weight: 600;
+}
+.ss-item .ss-mark {
+  flex: none;
+  font-size: 12px;
+}
+.ss-item .ss-name {
+  background: #fff;
+  border: 1px solid var(--hairline);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+}
+
+/* ==========================================================
+   DMARC ポリシー強度メーター (.policy-meter)
+   ========================================================== */
+.policy-meter {
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+}
+.pm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.pm-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--body);
+}
+.pm-value {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.pm-bars {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.pm-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--hairline);
+  transition: background 0.2s;
+}
+.policy-meter.level-1 .pm-bar[data-level="1"] { background: var(--amber); }
+.policy-meter.level-2 .pm-bar[data-level="1"],
+.policy-meter.level-2 .pm-bar[data-level="2"] { background: var(--amber); }
+.policy-meter.level-3 .pm-bar[data-level="1"],
+.policy-meter.level-3 .pm-bar[data-level="2"],
+.policy-meter.level-3 .pm-bar[data-level="3"] { background: var(--green); }
+.pm-note {
+  font-size: 12.5px;
+  color: var(--body);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ==========================================================
+   Gmail/Yahoo ガイドライン準拠 (.gmail-compliance)
+   ========================================================== */
+.gmail-compliance {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+.gmail-compliance.is-pass    { border-color: rgba(22,163,74,0.30); }
+.gmail-compliance.is-partial { border-color: rgba(217,119,6,0.30); }
+.gmail-compliance.is-fail    { border-color: rgba(192,57,43,0.30); }
+.gc-head {
+  margin-bottom: 12px;
+}
+.gc-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 4px;
+  flex-wrap: wrap;
+}
+.gc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.gc-status {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.gmail-compliance.is-pass    .gc-status { background: var(--green-soft); color: var(--green-text); }
+.gmail-compliance.is-partial .gc-status { background: var(--amber-soft); color: var(--amber-text); }
+.gmail-compliance.is-fail    .gc-status { background: var(--red-soft); color: var(--red-text); }
+.gc-note {
+  font-size: 12.5px;
+  color: var(--body);
+  margin: 0;
+}
+.gc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--body);
+}
+.gc-item.is-pass { color: var(--body); }
+.gc-item.is-fail { color: var(--ink); font-weight: 500; }
+.gc-mark { flex: none; font-size: 14px; }
+
+/* ==========================================================
+   改善ポイント (.tips-block)
+   ========================================================== */
+.tips-block {
+  background: var(--amber-soft);
+  border: 1px solid rgba(217,119,6,0.28);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+.tips-title {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--amber-text);
+  margin: 0 0 10px;
+}
+.tips-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tips-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.tips-item code {
+  background: #fff;
+  border: 1px solid var(--hairline);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.tips-mark { flex: none; font-size: 15px; }
+.tips-text { flex: 1; }
+
+/* ==========================================================
    Consult block (CTA — 無料で相談する)
    ========================================================== */
 .consult-block {

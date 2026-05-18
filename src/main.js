@@ -10,6 +10,7 @@ import { getDomainRecordsWithMock } from './api/dns-resolver-mock.js';
 import { diagnoseSPF } from './diagnosis/spf-diagnosis.js';
 import { diagnoseDKIMMultiple } from './diagnosis/dkim-diagnosis.js';
 import { diagnoseDMARC } from './diagnosis/dmarc-diagnosis.js';
+import { inferProviderFromMX } from './parsers/mx-provider-mapping.js';
 
 // ====================================================================
 // DOM 要素
@@ -422,6 +423,209 @@ function escapeHtml(str) {
 }
 
 // ====================================================================
+// Gmail / Yahoo ガイドライン準拠チェック（2024年2月施行）
+// ====================================================================
+
+function evaluateGmailCompliance(spf, dkim, dmarc) {
+  const spfOk = spf.status === 'configured';
+  const dkimOk = dkim.status === 'configured';
+  const dmarcConfigured = dmarc.status === 'configured';
+  const dmarcPolicy = dmarc.details?.policy || null;
+
+  const checks = [
+    {
+      label: 'SPF または DKIM が設定されている',
+      passed: spfOk || dkimOk
+    },
+    {
+      label: 'From ドメインに DMARC が設定されている',
+      passed: dmarcConfigured
+    },
+    {
+      label: 'DMARC ポリシーが宣言されている（p=タグ）',
+      passed: dmarcConfigured && !!dmarcPolicy
+    },
+    {
+      label: 'SPF と DKIM の両方が設定されている（5000通/日以上推奨）',
+      passed: spfOk && dkimOk
+    },
+    {
+      label: 'DMARC ポリシーが quarantine 以上（5000通/日以上推奨）',
+      passed: dmarcConfigured && (dmarcPolicy === 'quarantine' || dmarcPolicy === 'reject')
+    }
+  ];
+
+  const passedCount = checks.filter(c => c.passed).length;
+  const requiredCount = 3; // 最初の3つが大量送信者でなくても必須
+  const requiredPassed = checks.slice(0, requiredCount).every(c => c.passed);
+
+  let status, statusLabel;
+  if (passedCount === checks.length) {
+    status = 'pass';
+    statusLabel = '✅ 準拠';
+  } else if (requiredPassed) {
+    status = 'partial';
+    statusLabel = '🟡 一部準拠';
+  } else {
+    status = 'fail';
+    statusLabel = '❌ 非準拠';
+  }
+  return { status, statusLabel, checks };
+}
+
+function renderGmailCompliance(compliance) {
+  const statusEl = document.getElementById('gc-status');
+  const listEl = document.getElementById('gc-list');
+  const section = document.getElementById('gmail-compliance');
+  if (!statusEl || !listEl || !section) return;
+
+  section.classList.remove('is-pass', 'is-partial', 'is-fail');
+  section.classList.add(`is-${compliance.status}`);
+  statusEl.textContent = compliance.statusLabel;
+
+  listEl.innerHTML = '';
+  for (const c of compliance.checks) {
+    const li = document.createElement('li');
+    li.className = c.passed ? 'gc-item is-pass' : 'gc-item is-fail';
+    li.innerHTML = `<span class="gc-mark">${c.passed ? '✅' : '⚠️'}</span><span class="gc-label">${c.label}</span>`;
+    listEl.appendChild(li);
+  }
+}
+
+// ====================================================================
+// 改善ポイント集約（問題のあるカードからメッセージを集める）
+// ====================================================================
+
+function buildTips(spf, dkim, dmarc, verdict, provider) {
+  const tips = [];
+  if (!verdict.spfDone) {
+    tips.push('SPF レコードを DNS に追加してください。Google Workspace 利用時は <code>v=spf1 include:_spf.google.com ~all</code> が基本です。');
+  }
+  if (!verdict.dkimDone) {
+    if (provider) {
+      tips.push(`${provider.name} の管理画面で DKIM を有効化してください。${provider.adminGuide}`);
+    } else {
+      tips.push('ご利用のメールサービスの管理画面で DKIM を有効化し、案内された TXT レコードを DNS に登録してください。');
+    }
+  }
+  if (verdict.dmarcConfigured && !verdict.dmarcDone) {
+    tips.push('DMARC ポリシーを <code>p=none</code> から <code>p=quarantine</code> → <code>p=reject</code> へ段階的に強化してください。');
+  }
+  if (!verdict.dmarcConfigured) {
+    tips.push('DMARC レコードを <code>_dmarc.ドメイン</code> に追加してください。最初は <code>v=DMARC1; p=none; rua=mailto:あなたのアドレス</code> から監視モードで始めれば配信に影響はありません。');
+  }
+  // 鍵長警告
+  const keyLen = dkim.details?.keyLength;
+  if (verdict.dkimDone && keyLen && keyLen < 2048) {
+    tips.push(`DKIM 公開鍵が ${keyLen}bit です。2048bit 以上への更新を推奨します。`);
+  }
+  return tips;
+}
+
+function renderTips(tips) {
+  const block = document.getElementById('tips-block');
+  const list = document.getElementById('tips-list');
+  if (!block || !list) return;
+  if (tips.length === 0) {
+    block.hidden = true;
+    return;
+  }
+  list.innerHTML = '';
+  for (const tip of tips) {
+    const li = document.createElement('li');
+    li.className = 'tips-item';
+    li.innerHTML = `<span class="tips-mark">💡</span><span class="tips-text">${tip}</span>`;
+    list.appendChild(li);
+  }
+  block.hidden = false;
+}
+
+// ====================================================================
+// DKIM: 検索したセレクター一覧表示
+// ====================================================================
+
+function renderSearchedSelectors(dkimRecords) {
+  const block = document.getElementById('dkim-searched-block');
+  const list = document.getElementById('dkim-searched-list');
+  if (!block || !list) return;
+  const searched = dkimRecords?.searchedSelectors;
+  if (!searched || searched.length === 0) {
+    block.hidden = true;
+    return;
+  }
+  list.innerHTML = '';
+  for (const item of searched) {
+    const li = document.createElement('li');
+    li.className = item.found ? 'ss-item is-found' : 'ss-item';
+    li.innerHTML = `<span class="ss-mark">${item.found ? '✅' : '○'}</span><code class="ss-name">${item.selector}</code>`;
+    list.appendChild(li);
+  }
+  block.hidden = false;
+}
+
+// ====================================================================
+// DKIM: 公開鍵の鍵長 UI 表示
+// ====================================================================
+
+function renderDkimKeyLength(dkim) {
+  const row = document.getElementById('dkim-keylen-row');
+  const value = document.getElementById('dkim-keylen-value');
+  if (!row || !value) return;
+  const keyLen = dkim.details?.keyLength;
+  if (!keyLen) {
+    row.hidden = true;
+    return;
+  }
+  let icon = '✅';
+  let level = 'is-ok';
+  if (keyLen < 1024) {
+    icon = '❌';
+    level = 'is-error';
+  } else if (keyLen < 2048) {
+    icon = '⚠️';
+    level = 'is-warn';
+  }
+  row.classList.remove('is-ok', 'is-warn', 'is-error');
+  row.classList.add(level);
+  value.innerHTML = `${icon} <strong>${keyLen}bit</strong>${keyLen < 2048 ? '（2048bit 以上を推奨）' : '（推奨基準を満たしています）'}`;
+  row.hidden = false;
+}
+
+// ====================================================================
+// DMARC: ポリシー強度メーター
+// ====================================================================
+
+function renderDmarcPolicyMeter(dmarc) {
+  const meter = document.getElementById('dmarc-policy-meter');
+  const valueEl = document.getElementById('pm-value');
+  const noteEl = document.getElementById('pm-note');
+  if (!meter || !valueEl || !noteEl) return;
+
+  if (dmarc.status !== 'configured') {
+    meter.hidden = true;
+    return;
+  }
+  const policy = dmarc.details?.policy || 'none';
+  let level = 1;
+  let label = 'none（監視のみ）';
+  let note = '監視モードのみで、なりすましメールの隔離・拒否は行われません。次のステップは p=quarantine です。';
+  if (policy === 'quarantine') {
+    level = 2;
+    label = 'quarantine（隔離）';
+    note = '受信側でなりすましメールが迷惑メールフォルダに隔離されます。最終的には p=reject への強化を推奨します。';
+  } else if (policy === 'reject') {
+    level = 3;
+    label = 'reject（拒否・最強）';
+    note = '最も強い設定です。なりすましメールは受信側で拒否されます。';
+  }
+  meter.classList.remove('level-1', 'level-2', 'level-3');
+  meter.classList.add(`level-${level}`);
+  valueEl.textContent = label;
+  noteEl.textContent = note;
+  meter.hidden = false;
+}
+
+// ====================================================================
 // CTA 上部 — consult-lead の出し分け（パターン別）
 // ====================================================================
 
@@ -542,6 +746,9 @@ async function performDiagnosis() {
         : null
     });
 
+    // MX レコードからプロバイダー推測
+    const provider = inferProviderFromMX(records.mx || []);
+
     // DKIM カード
     // 検出済み DKIM レコードがあれば最初のものを表示
     const dkimRecordText = records.dkim?.[0]?.record || null;
@@ -552,6 +759,26 @@ async function performDiagnosis() {
         ? 'DKIM が見つからないと、取引先のGmail/Outlookなどで迷惑メールフォルダに振り分けられたり、メールが途中で書き換えられても気づけない状態になる可能性があります。'
         : null
     });
+
+    // DKIM 未検出時に MX 推測プロバイダーの案内を explain-note に上書き
+    if (!verdict.dkimDone && provider) {
+      const dkimCard = document.querySelector('[data-testid="dkim-result"]');
+      const noteEl = dkimCard?.querySelector('.explain-note');
+      if (noteEl) {
+        let html = `MX レコードから <strong>${provider.name}</strong> をご利用と推測されますが、独自ドメインの DKIM セレクターが見つかりませんでした。${provider.adminGuide} メールヘッダーの <code>DKIM-Signature</code> 内 <code>s=</code> タグの値を「DKIM セレクター名（任意）」に入力すると、ピンポイントで判定できます。`;
+        if (provider.thirdPartySigning) {
+          html += `<br><br><strong>※ 第三者署名の可能性:</strong> ${provider.thirdPartySigning}`;
+        }
+        noteEl.innerHTML = html;
+        noteEl.hidden = false;
+      }
+    }
+
+    // DKIM: 公開鍵の鍵長表示
+    renderDkimKeyLength(dkimDiagnosis);
+
+    // DKIM: 検索したセレクター一覧
+    renderSearchedSelectors(records.dkim);
 
     // DMARC カード
     // 判定: 完全設定(quarantine/reject) = green、監視モード(p=none) = amber、未設定 = red
@@ -577,6 +804,17 @@ async function performDiagnosis() {
                 : '現在の設定では、なりすましメールが取引先に届いてしまう可能性があります。あとから問題があったか確認するレポートも受け取れません。'))
         : null
     });
+
+    // DMARC: ポリシー強度メーター
+    renderDmarcPolicyMeter(dmarcDiagnosis);
+
+    // Gmail / Yahoo ガイドライン準拠チェック
+    const compliance = evaluateGmailCompliance(spfDiagnosis, dkimDiagnosis, dmarcDiagnosis);
+    renderGmailCompliance(compliance);
+
+    // 改善ポイント集約
+    const tips = buildTips(spfDiagnosis, dkimDiagnosis, dmarcDiagnosis, verdict, provider);
+    renderTips(tips);
 
     // CTA 上部のリード文をパターン別に変更
     updateConsultTopLead(verdict.pattern);
