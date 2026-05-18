@@ -337,8 +337,8 @@ body {
 }
 .check-progress .cp-label {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
+  font-weight: 500;
+  color: var(--body);
   letter-spacing: 0;
   margin-right: 4px;
 }
@@ -417,7 +417,7 @@ body {
 .signal .label {
   font-size: 14px;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--body);
   letter-spacing: 0.04em;
 }
 .signal .state {
@@ -433,7 +433,7 @@ body {
 
 .verdict-summary {
   font-size: 15.5px;
-  color: var(--ink);
+  color: var(--body);
   line-height: 1.75;
 }
 .verdict-summary strong {
