@@ -85,7 +85,7 @@ body {
 }
 .hero h1 {
   font-size: clamp(26px, 3.6vw, 38px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.28;
   letter-spacing: -0.022em;
   color: var(--ink);
@@ -619,7 +619,7 @@ body {
 }
 .consult-block h3 {
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ink);
   letter-spacing: -0.01em;
   margin-bottom: 6px;
