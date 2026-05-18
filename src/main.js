@@ -379,7 +379,7 @@ function updateConsultTopLead(pattern) {
       lead.textContent = '3項目すべて新規設定が必要です。御社の利用サービスに応じた具体的な手順をメールでご案内します。';
       break;
     default:
-      lead.textContent = '気になる点や設定方法など、お気軽にメールでご相談ください。';
+      lead.textContent = '気になる点や設定方法など、お気軽にご相談ください。';
   }
 }
 

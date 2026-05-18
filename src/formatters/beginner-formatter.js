@@ -106,7 +106,7 @@ export function getSummaryMessage(results) {
       message: '3項目すべて設定済みです。',
       detail: 'SPF・DKIM・DMARC のすべてが適切に設定されています。',
       needsConsultation: false,
-      consultationMessage: '無料でメール相談する'
+      consultationMessage: '無料で相談する'
     };
   }
 
@@ -115,6 +115,6 @@ export function getSummaryMessage(results) {
     message: `${notConfigured.join('、')}の設定が確認できませんでした。`,
     detail: '取引先に送ったメールが迷惑メールフォルダに振り分けられる可能性があります。',
     needsConsultation: true,
-    consultationMessage: '無料でメール相談する'
+    consultationMessage: '無料で相談する'
   };
 }

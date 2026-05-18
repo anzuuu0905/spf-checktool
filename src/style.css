@@ -542,7 +542,7 @@ body {
 .why-block .why-cta:hover svg { transform: translateX(2px); }
 
 /* ==========================================================
-   Consult block (CTA — 無料でメール相談する)
+   Consult block (CTA — 無料で相談する)
    ========================================================== */
 .consult-block {
   background: var(--surface);
