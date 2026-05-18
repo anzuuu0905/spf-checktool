@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprint 4 修正確認テスト</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+    }
+    h2 {
+      color: #666;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 10px;
+    }
+    .test-case {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f9f9f9;
+      border-left: 4px solid #4CAF50;
+    }
+    .test-case h3 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
+    .result {
+      margin: 10px 0;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .pass {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+    .fail {
+      color: #f44336;
+      font-weight: bold;
+    }
+    .warning {
+      color: #ff9800;
+      font-weight: bold;
+    }
+    button {
+      padding: 10px 20px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #1976D2;
+    }
+    code {
+      background: #e0e0e0;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sprint 4 修正確認テスト</h1>
+
+  <div class="test-section">
+    <h2>修正項目チェックリスト</h2>
+
+    <div class="test-case">
+      <h3>1. 診断結果セクションのID修正</h3>
+      <div class="result" id="id-check-result">
+        <p>確認中...</p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>2. has-issues / no-issues クラスの管理</h3>
+      <div class="result" id="class-check-result">
+        <p>確認中...</p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>3. 連続診断でのフォーム重複防止</h3>
+      <div class="result" id="duplicate-check-result">
+        <p>診断を実行してテスト</p>
+      </div>
+    </div>
+
+    <div class="test-case">
+      <h3>4. 問題なしケースの表示確認</h3>
+      <div class="result" id="no-issues-display-result">
+        <p>診断を実行してテスト</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>テストツール</h2>
+    <button onclick="testIdAndClass()">1. ID/クラス確認</button>
+    <button onclick="testNoIssuesCase()">2. 問題なしケーステスト</button>
+    <button onclick="testHasIssuesCase()">3. 問題ありケーステスト</button>
+    <button onclick="testConsecutiveDiagnosis()">4. 連続診断テスト</button>
+    <button onclick="openMainApp()">メインアプリを開く</button>
+  </div>
+
+  <script>
+    // メインアプリケーションのウィンドウ参照
+    let appWindow = null;
+
+    function openMainApp() {
+      appWindow = window.open('/index.html', 'mainApp', 'width=1200,height=800');
+    }
+
+    function testIdAndClass() {
+      const resultDiv = document.getElementById('id-check-result');
+
+      if (!appWindow || appWindow.closed) {
+        resultDiv.innerHTML = '<p class="fail">✗ メインアプリを先に開いてください</p>';
+        return;
+      }
+
+      const doc = appWindow.document;
+
+      // ID確認
+      const resultsSection = doc.getElementById('result-section');
+      let html = '';
+
+      if (resultsSection) {
+        html += '<p class="pass">✓ <code>id="result-section"</code> が存在します</p>';
+
+        // クラスの確認
+        const hasIssuesClass = resultsSection.classList.contains('has-issues');
+        const noIssuesClass = resultsSection.classList.contains('no-issues');
+
+        if (hasIssuesClass || noIssuesClass) {
+          html += '<p class="pass">✓ 診断結果クラスが管理されています</p>';
+          html += '<ul>';
+          if (hasIssuesClass) html += '<li>現在: <code>has-issues</code></li>';
+          if (noIssuesClass) html += '<li>現在: <code>no-issues</code></li>';
+          html += '</ul>';
+        } else {
+          html += '<p class="warning">⚠ 診断前のため、クラスはまだ設定されていません（正常）</p>';
+        }
+      } else {
+        html += '<p class="fail">✗ <code>id="result-section"</code> が見つかりません</p>';
+      }
+
+      resultDiv.innerHTML = html;
+    }
+
+    function testNoIssuesCase() {
+      const resultDiv = document.getElementById('no-issues-display-result');
+
+      if (!appWindow || appWindow.closed) {
+        resultDiv.innerHTML = '<p class="fail">✗ メインアプリを先に開いてください</p>';
+        return;
+      }
+
+      resultDiv.innerHTML = '<p class="warning">⚠ メインアプリで以下のドメインを診断してください：</p>' +
+        '<ul>' +
+        '<li>SPF/DKIM/DMARC全て設定済みのドメイン（例: google.com）</li>' +
+        '<li>診断後、フォームの見出しが「その他のご相談も承ります」になることを確認</li>' +
+        '<li>診断結果セクションに <code>no-issues</code> クラスが追加されることを確認</li>' +
+        '</ul>';
+
+      // 定期的にチェック
+      setTimeout(() => checkNoIssuesResult(), 2000);
+    }
+
+    function checkNoIssuesResult() {
+      if (!appWindow || appWindow.closed) return;
+
+      const doc = appWindow.document;
+      const formsArea = doc.getElementById('google-forms-area');
+      const resultsSection = doc.getElementById('result-section');
+
+      if (formsArea && resultsSection) {
+        const heading = formsArea.querySelector('.forms-heading');
+        const hasNoIssuesClass = resultsSection.classList.contains('no-issues');
+
+        if (heading && heading.textContent === 'その他のご相談も承ります' && hasNoIssuesClass) {
+          document.getElementById('no-issues-display-result').innerHTML =
+            '<p class="pass">✓ 問題なしケースが正しく表示されています</p>' +
+            '<ul>' +
+            '<li>見出し: 「その他のご相談も承ります」</li>' +
+            '<li>クラス: <code>no-issues</code></li>' +
+            '</ul>';
+        }
+      }
+    }
+
+    function testHasIssuesCase() {
+      const resultDiv = document.getElementById('duplicate-check-result');
+
+      if (!appWindow || appWindow.closed) {
+        resultDiv.innerHTML = '<p class="fail">✗ メインアプリを先に開いてください</p>';
+        return;
+      }
+
+      resultDiv.innerHTML = '<p class="warning">⚠ メインアプリで以下のドメインを診断してください：</p>' +
+        '<ul>' +
+        '<li>SPF未設定のドメイン（例: test-no-spf.example.com）</li>' +
+        '<li>診断後、フォームの見出しが「設定方法がわからない方、専門家に相談したい方へ」になることを確認</li>' +
+        '<li>診断結果セクションに <code>has-issues</code> クラスが追加されることを確認</li>' +
+        '</ul>';
+    }
+
+    function testConsecutiveDiagnosis() {
+      const resultDiv = document.getElementById('duplicate-check-result');
+
+      if (!appWindow || appWindow.closed) {
+        resultDiv.innerHTML = '<p class="fail">✗ メインアプリを先に開いてください</p>';
+        return;
+      }
+
+      resultDiv.innerHTML = '<p class="warning">⚠ 連続診断テスト手順：</p>' +
+        '<ol>' +
+        '<li>問題ありのドメインを診断（例: test.example.com）</li>' +
+        '<li>フォームが表示され、見出しが「設定方法がわからない方...」になることを確認</li>' +
+        '<li>別のドメインを診断（例: google.com）</li>' +
+        '<li>フォームが重複せず、見出しのみ更新されることを確認</li>' +
+        '</ol>';
+
+      // 定期的にフォーム数をチェック
+      setInterval(() => {
+        if (!appWindow || appWindow.closed) return;
+
+        const doc = appWindow.document;
+        const formsAreas = doc.querySelectorAll('#google-forms-area');
+
+        if (formsAreas.length > 1) {
+          resultDiv.innerHTML += '<p class="fail">✗ フォームが重複しています（' + formsAreas.length + '個）</p>';
+        } else if (formsAreas.length === 1) {
+          const status = document.getElementById('duplicate-check-result').innerHTML;
+          if (!status.includes('✓')) {
+            document.getElementById('duplicate-check-result').innerHTML =
+              '<p class="pass">✓ フォームは1個のみ（重複なし）</p>';
+          }
+        }
+      }, 1000);
+    }
+
+    // 初期チェック
+    window.onload = function() {
+      setTimeout(() => {
+        openMainApp();
+        setTimeout(() => {
+          testIdAndClass();
+        }, 1000);
+      }, 500);
+    };
+  </script>
+</body>
+</html>
