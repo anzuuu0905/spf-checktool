@@ -118,39 +118,41 @@ export async function getSPFRecord(domain) {
 }
 
 /**
- * DKIMレコードを取得（複数のセレクターを試行）
+ * DKIMレコードを取得（複数のセレクターを並列試行）
+ *
+ * Sprint 5: 28セレクターを Promise.all で並列実行し、
+ * 全体の待ち時間を 1 秒以内に抑える。
+ *
  * @param {string} domain - ドメイン名
  * @returns {Promise<Array<Object>>} DKIMレコードとセレクターの配列
  */
 export async function getDKIMRecords(domain) {
   const selectors = checkCommonSelectors();
-  const results = [];
 
-  for (const selector of selectors) {
-    try {
-      const dkimDomain = `${selector}._domainkey.${domain}`;
-      const records = await queryDNS(dkimDomain, 'TXT');
+  const results = await Promise.all(
+    selectors.map(async (selector) => {
+      try {
+        const dkimDomain = `${selector}._domainkey.${domain}`;
+        const records = await queryDNS(dkimDomain, 'TXT');
 
-      if (records.length > 0) {
+        if (records.length === 0) {
+          return null;
+        }
+
         // DKIMレコードとして妥当なものを探す
         const dkimRecord = records.find(record =>
           record.includes('p=') || record.includes('v=DKIM1')
         );
 
-        if (dkimRecord) {
-          results.push({
-            selector,
-            record: dkimRecord
-          });
-        }
+        return dkimRecord ? { selector, record: dkimRecord } : null;
+      } catch {
+        // 個別セレクターのエラーは無視
+        return null;
       }
-    } catch (error) {
-      // 個別のセレクターのエラーは無視して次を試す
-      continue;
-    }
-  }
+    })
+  );
 
-  return results;
+  return results.filter(r => r !== null);
 }
 
 /**

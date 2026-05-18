@@ -29,8 +29,8 @@ export function diagnoseSPF(spfRecord) {
         status: 'not_configured',
         level: 'error',
         message: '未設定',
-        explanation: 'あなたの会社名で偽の請求書メールが取引先に届き、信用を失います。さらにGmailやOutlookがあなたのメールを「迷惑メール」と判定し、取引先に届かなくなり、大切な商談を逃す可能性があります。',
-        whatIs: '会社の看板を勝手に使った偽メールをブロックする機能。郵便局で差出人をチェックするイメージ',
+        explanation: 'SPF の設定が見つかりませんでした。送信元サーバーを許可するための設定が必要です。',
+        whatIs: '送ってOKなサーバーを登録する「住所録」。許可外の送信元を見分けます。',
         details: null
       };
     }
@@ -64,8 +64,8 @@ export function diagnoseSPF(spfRecord) {
       status: 'configured',
       level,
       message: '設定済み',
-      explanation: null,
-      whatIs: '会社の看板を勝手に使った偽メールをブロックする機能。郵便局で差出人をチェックするイメージ',
+      explanation: '許可された送信サーバーがDNSに正しく登録されています。',
+      whatIs: '送ってOKなサーバーを登録する「住所録」。許可外の送信元を見分けます。',
       details: {
         parsed,
         includeCount,
@@ -80,7 +80,7 @@ export function diagnoseSPF(spfRecord) {
       level: 'error',
       message: 'エラー',
       explanation: `SPFレコードの解析中にエラーが発生しました: ${error.message}`,
-      whatIs: '会社の看板を勝手に使った偽メールをブロックする機能。郵便局で差出人をチェックするイメージ',
+      whatIs: '送ってOKなサーバーを登録する「住所録」。許可外の送信元を見分けます。',
       details: {
         error: error.message
       }

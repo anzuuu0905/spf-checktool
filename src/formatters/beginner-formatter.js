@@ -1,8 +1,8 @@
 /**
  * 初心者向けフォーマッター
- * @module formatters/beginner-formatter
+ * Sprint 5: モックv2 の文言（迷惑メールフォルダ観点・落ち着いたトーン）に統一
  *
- * /docs/beginner-explanations.md の内容をそのまま使用する
+ * @module formatters/beginner-formatter
  */
 
 /**
@@ -11,12 +11,12 @@
  */
 export function getSPFExplanation() {
   return {
-    title: 'SPF（差出人チェック機能）',
-    oneLineDescription: '会社の看板を勝手に使った偽メールをブロックする「差出人チェック機能」',
-    withoutConfiguration: 'あなたの会社名で偽の請求書メールが取引先に届き、信用を失います。さらにGmailやOutlookがあなたのメールを「迷惑メール」と判定し、取引先に届かなくなり、大切な商談を逃す可能性があります。',
-    withConfiguration: '「この会社からのメールは、必ずこの郵便局から送られる」という証明書を作ることで、偽物を自動的にブロックできます。取引先から「この会社はセキュリティがしっかりしている」と信頼され、安心してメールのやり取りができます。',
+    title: 'SPF（送信元サーバーの許可）',
+    oneLineDescription: '送ってOKなサーバーを登録する「住所録」。許可外の送信元を見分けます。',
+    withoutConfiguration: 'SPF の設定が見つかりませんでした。送信元サーバーを許可するための設定が必要です。',
+    withConfiguration: '許可された送信サーバーがDNSに正しく登録されています。',
     analogy: '会社の受付に「うちの社員リスト」を渡しておき、名刺を出した人が本当に社員かチェックしてもらうようなものです。',
-    whatIs: '会社の看板を勝手に使った偽メールをブロックする機能。郵便局で差出人をチェックするイメージ'
+    whatIs: '送ってOKなサーバーを登録する「住所録」。許可外の送信元を見分けます。'
   };
 }
 
@@ -26,12 +26,12 @@ export function getSPFExplanation() {
  */
 export function getDKIMExplanation() {
   return {
-    title: 'DKIM（会社の実印機能）',
-    oneLineDescription: 'メールに「会社の実印」を押して、本物であることを証明する機能',
-    withoutConfiguration: 'メールが途中で書き換えられても気づかれず、「振込先を変更しました」という偽の内容に改ざんされる危険があります。',
-    withConfiguration: 'デジタルの「会社印」をメールに押すことで、内容が少しでも書き換えられたら「偽物」とすぐにバレる仕組みです。大手企業との取引でも「この会社は信頼できる」と認められます。',
+    title: 'DKIM（電子サイン）',
+    oneLineDescription: 'メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。',
+    withoutConfiguration: 'Google Workspace・Microsoft 365・エックスサーバー など主要なメールサービス28種類の設定で確認しましたが、見つかりませんでした。',
+    withConfiguration: '公開鍵が発見でき、メールへの署名が検証可能な状態です。',
     analogy: '重要書類に割印を押すように、メール全体に「改ざん防止シール」を貼るイメージです。',
-    whatIs: 'メールに会社の実印を押す機能。割印のように改ざん防止する'
+    whatIs: 'メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。'
   };
 }
 
@@ -41,12 +41,12 @@ export function getDKIMExplanation() {
  */
 export function getDMARCExplanation() {
   return {
-    title: 'DMARC（最終防衛ライン）',
-    oneLineDescription: 'SPFとDKIMの2つの機能を組み合わせて、偽メールを完全シャットアウトする「最終防衛ライン」',
-    withoutConfiguration: 'SPFやDKIMでチェックしても、すり抜ける巧妙な偽メールがあり、社長なりすまし詐欺（CEO詐欺）で、中小企業でも数百万円〜数千万円の被害に遭うケースが急増しています。',
-    withConfiguration: '「偽物と判定されたメールは必ず迷惑メールへ」「または完全に受信拒否」という厳格なルールを設定でき、なりすましを徹底的に防げます。取引先からの信頼も高まります。',
-    analogy: '警備員が「社員証」と「入館証」の両方をチェックし、どちらか一つでも怪しければ絶対に中に入れない、という二重セキュリティゲートです。',
-    whatIs: 'SPFとDKIMを組み合わせた最終防衛ライン。社員証と入館証の二重チェック'
+    title: 'DMARC（運用ポリシー）',
+    oneLineDescription: 'SPF/DKIMの結果を踏まえた「運用ポリシー」。不正メールの扱いを決めます。',
+    withoutConfiguration: 'DMARC の設定が見つかりませんでした。なりすましメールがあった場合のルールがまだ定まっていません。',
+    withConfiguration: 'なりすまし対策のポリシーが設定されています。レポートも受信中です。',
+    analogy: 'SPF と DKIM の判定結果をまとめて、不正メールが届いた場合にどう扱うかをルール化したものです。',
+    whatIs: 'SPF/DKIMの結果を踏まえた「運用ポリシー」。不正メールの扱いを決めます。'
   };
 }
 
@@ -103,18 +103,18 @@ export function getSummaryMessage(results) {
   if (notConfigured.length === 0) {
     return {
       status: 'success',
-      message: '問題ありません',
-      detail: 'メール配信のセキュリティ設定は全て適切に構成されています。',
+      message: '3項目すべて設定済みです。',
+      detail: 'SPF・DKIM・DMARC のすべてが適切に設定されています。',
       needsConsultation: false,
-      consultationMessage: 'さらに詳しく診断したい方はこちら'
+      consultationMessage: '無料でメール相談する'
     };
   }
 
   return {
     status: 'warning',
-    message: `${notConfigured.join('、')}が未設定です`,
-    detail: '設定には専門的な知識が必要です',
+    message: `${notConfigured.join('、')}の設定が確認できませんでした。`,
+    detail: '取引先に送ったメールが迷惑メールフォルダに振り分けられる可能性があります。',
     needsConsultation: true,
-    consultationMessage: '専門家に相談する'
+    consultationMessage: '無料でメール相談する'
   };
 }

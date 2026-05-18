@@ -121,21 +121,38 @@ export function getKeyType(parsedDKIM) {
 
 /**
  * 複数のDKIMセレクターをチェック
- * @param {Array<string>} selectors - チェックするセレクターのリスト
- * @returns {Array<string>} 見つかったセレクターのリスト
+ *
+ * Sprint 5: 主要メールサービス28種類をカバーするセレクターリスト
+ * (Google Workspace / Microsoft 365 / エックスサーバー / MailChimp / SendGrid /
+ *  HubSpot / Zoho / Fastmail / ProtonMail / Zendesk / Klaviyo 等)
+ *
+ * @returns {Array<string>} 確認対象のセレクター配列（28個）
  */
 export function checkCommonSelectors() {
-  // よく使われるDKIMセレクター
   return [
-    'default',
-    'google',
-    'selector1',
-    'selector2',
-    'k1',
-    'k2',
-    's1024',
-    's2048',
-    'mail',
+    // Google / Microsoft
+    'default', 'google', 'selector1', 'selector2',
+    // SendGrid / Twilio
+    's1', 's2',
+    // Mailchimp / Mandrill
+    'k1', 'k2', 'k3', 'mte1', 'mte2',
+    // Yahoo / 汎用
+    's1024', 's2048',
+    // HubSpot
+    'hs1', 'hs2',
+    // Brevo / Postfix
+    'mail', 'mail2',
+    // Zoho
+    'zmail',
+    // Fastmail
+    'fm1', 'fm2', 'fm3',
+    // ProtonMail
+    'protonmail', 'protonmail2', 'protonmail3',
+    // Zendesk
+    'zendesk1', 'zendesk2',
+    // Klaviyo
+    'kl',
+    // 汎用
     'dkim'
   ];
 }

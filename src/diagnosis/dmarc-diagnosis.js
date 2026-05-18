@@ -29,8 +29,8 @@ export function diagnoseDMARC(dmarcRecord) {
         status: 'not_configured',
         level: 'info',
         message: '未設定',
-        explanation: 'SPFやDKIMでチェックしても、すり抜ける巧妙な偽メールがあり、社長なりすまし詐欺（CEO詐欺）で、中小企業でも数百万円〜数千万円の被害に遭うケースが急増しています。',
-        whatIs: 'SPFとDKIMを組み合わせた最終防衛ライン。社員証と入館証の二重チェック',
+        explanation: 'DMARC の設定が見つかりませんでした。なりすましメールがあった場合のルールがまだ定まっていません。',
+        whatIs: 'SPF/DKIMの結果を踏まえた「運用ポリシー」。不正メールの扱いを決めます。',
         details: null
       };
     }
@@ -44,7 +44,7 @@ export function diagnoseDMARC(dmarcRecord) {
 
     // ポリシーのチェック
     if (policy === 'none') {
-      warnings.push('ポリシーが「none」に設定されています。DMARCチェックは行われますが、失敗してもメールは通常通り配信されます。');
+      warnings.push('ポリシーが「監視モード」に設定されています。DMARCチェックは行われますが、失敗してもメールは通常通り配信されます。');
       recommendations.push('段階的に「quarantine」または「reject」への移行を検討してください。');
     } else if (policy === 'quarantine') {
       recommendations.push('最終的には「reject」への移行を検討してください。');
@@ -74,8 +74,8 @@ export function diagnoseDMARC(dmarcRecord) {
       status: 'configured',
       level,
       message: '設定済み',
-      explanation: null,
-      whatIs: 'SPFとDKIMを組み合わせた最終防衛ライン。社員証と入館証の二重チェック',
+      explanation: 'なりすまし対策のポリシーが設定されています。レポートも受信中です。',
+      whatIs: 'SPF/DKIMの結果を踏まえた「運用ポリシー」。不正メールの扱いを決めます。',
       details: {
         parsed,
         policy,
@@ -91,7 +91,7 @@ export function diagnoseDMARC(dmarcRecord) {
       level: 'error',
       message: 'エラー',
       explanation: `DMARCレコードの解析中にエラーが発生しました: ${error.message}`,
-      whatIs: 'SPFとDKIMを組み合わせた最終防衛ライン。社員証と入館証の二重チェック',
+      whatIs: 'SPF/DKIMの結果を踏まえた「運用ポリシー」。不正メールの扱いを決めます。',
       details: {
         error: error.message
       }

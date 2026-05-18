@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>メール配信診断ツール</title>
+  <title>なりすまし対策診断 — 30秒でメール到達リスクを診断</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-D06SMJF0RM"></script>
@@ -19,34 +19,46 @@
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>メール配信診断ツール</h1>
-      <p class="catchphrase">あなたの会社のメールは正しく届いていますか？</p>
-    </header>
+    <!-- HERO -->
+    <header class="hero">
+      <h1>30秒でメール到達リスクを診断</h1>
+      <p class="lead">ドメインを入力するだけで、SPF・DKIM・DMARC の設定状況を確認できます。</p>
 
-    <main>
-      <!-- 診断フォーム -->
-      <section class="diagnosis-form">
-        <p class="form-instruction">診断したいメールアドレスのドメイン名を入力してください</p>
-        <div class="input-group">
+      <div class="hero-badges" aria-label="サービスの特徴">
+        <span class="hero-badge">30秒で完了</span>
+        <span class="hero-badge">無料</span>
+        <span class="hero-badge">登録不要</span>
+      </div>
+
+      <form class="check-card" id="diagnosis-form" role="search">
+        <div class="input-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <label for="domain-input" class="visually-hidden">ドメイン名を入力</label>
           <input
             type="text"
             id="domain-input"
             class="domain-input"
-            placeholder="例: example.com"
+            placeholder="example.com"
             aria-label="ドメイン名を入力"
           />
-          <button
-            id="diagnose-button"
-            class="diagnose-button"
-            type="button"
-          >
-            診断する
-          </button>
         </div>
-        <div id="error-message" class="error-message hidden" role="alert"></div>
-      </section>
+        <button
+          id="diagnose-button"
+          class="btn-primary diagnose-button"
+          type="submit"
+        >
+          診断する
+        </button>
+      </form>
+      <p class="check-note">入力したドメイン情報は保存されません</p>
 
+      <div id="error-message" class="error-message hidden" role="alert"></div>
+    </header>
+
+    <main>
       <!-- ローディング表示 -->
       <div id="loading" class="loading hidden">
         <div class="spinner"></div>
@@ -54,242 +66,230 @@
       </div>
 
       <!-- 診断結果 -->
-      <section id="result-section" class="results hidden">
-        <!-- SPF結果カード -->
-        <div class="result-card" data-testid="spf-result">
-          <div class="result-header">
-            <h2>SPF（差出人チェック機能）</h2>
-            <div class="status">
-              <span class="status-icon" data-testid="check-icon"></span>
-              <span class="status-text"></span>
+      <section id="result-section" class="results hidden" aria-live="polite">
+
+        <!-- VERDICT BANNER (信号機3色 + ラベル + 達成率) -->
+        <section class="verdict" id="verdict-banner" aria-live="polite">
+          <div class="verdict-state">
+            <span class="verdict-label" id="verdict-label">
+              <span class="lbl-dot" aria-hidden="true"></span>
+              <span class="verdict-label-text"></span>
+            </span>
+            <div class="check-progress" id="check-progress" aria-label="達成率">
+              <span class="cp-label">達成率</span>
+              <span class="check-marks" id="check-marks" aria-hidden="true">
+                <span class="cm" data-protocol="spf"></span>
+                <span class="cm" data-protocol="dkim"></span>
+                <span class="cm" data-protocol="dmarc"></span>
+              </span>
+              <span class="cp-num tabular" id="cp-num"></span>
             </div>
           </div>
-          <div class="result-body">
-            <p class="explanation"></p>
-            <details class="what-is">
-              <summary>SPFとは何ですか？</summary>
-              <p class="what-is-content"></p>
-            </details>
-          </div>
-        </div>
-
-        <!-- DKIM結果カード -->
-        <div class="result-card" data-testid="dkim-result">
-          <div class="result-header">
-            <h2>DKIM（会社の実印機能）</h2>
-            <div class="status">
-              <span class="status-icon" data-testid="check-icon"></span>
-              <span class="status-text"></span>
+          <div class="verdict-right">
+            <div class="signals" role="group" aria-label="プロトコル別シグナル">
+              <div class="signal" id="signal-spf" data-protocol="spf">
+                <span class="lamp" aria-hidden="true"></span>
+                <span class="label">SPF</span>
+                <span class="state"></span>
+              </div>
+              <div class="signal" id="signal-dkim" data-protocol="dkim">
+                <span class="lamp" aria-hidden="true"></span>
+                <span class="label">DKIM</span>
+                <span class="state"></span>
+              </div>
+              <div class="signal" id="signal-dmarc" data-protocol="dmarc">
+                <span class="lamp" aria-hidden="true"></span>
+                <span class="label">DMARC</span>
+                <span class="state"></span>
+              </div>
             </div>
+            <p class="verdict-summary" id="verdict-summary"></p>
           </div>
-          <div class="result-body">
-            <p class="explanation"></p>
-            <details class="what-is">
-              <summary>DKIMとは何ですか？</summary>
-              <p class="what-is-content"></p>
-            </details>
-          </div>
-        </div>
+        </section>
 
-        <!-- DMARC結果カード -->
-        <div class="result-card" data-testid="dmarc-result">
-          <div class="result-header">
-            <h2>DMARC（最終防衛ライン）</h2>
-            <div class="status">
-              <span class="status-icon" data-testid="info-icon"></span>
-              <span class="status-text"></span>
+        <!-- RESULT CARDS -->
+        <div class="results-grid">
+          <!-- SPF結果カード -->
+          <article class="result-card" data-testid="spf-result">
+            <header class="result-head">
+              <div class="result-title">
+                <div class="result-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+                </div>
+                <div>
+                  <h3>SPF（送信元サーバーの許可）</h3>
+                  <p class="sub">Sender Policy Framework</p>
+                </div>
+              </div>
+              <span class="status-pill" id="spf-status-pill">
+                <span class="dot" aria-hidden="true"></span>
+                <span class="status-text"></span>
+              </span>
+            </header>
+            <div class="result-body">
+              <p class="explain"></p>
+              <div class="record-block" hidden></div>
+              <div class="why-block" hidden>
+                <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
+                <p class="why-body"></p>
+                <div class="why-divider"></div>
+                <a href="#consult-block-top" class="why-cta">
+                  メールで詳細を相談する
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+              </div>
             </div>
-          </div>
-          <div class="result-body">
-            <p class="explanation"></p>
-            <details class="what-is">
-              <summary>DMARCとは何ですか？</summary>
-              <p class="what-is-content"></p>
-            </details>
-          </div>
+          </article>
+
+          <!-- DKIM結果カード -->
+          <article class="result-card" data-testid="dkim-result">
+            <header class="result-head">
+              <div class="result-title">
+                <div class="result-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/><path d="M9 12l2 2 4-4"/></svg>
+                </div>
+                <div>
+                  <h3>DKIM（電子サイン）</h3>
+                  <p class="sub">DomainKeys Identified Mail</p>
+                </div>
+              </div>
+              <span class="status-pill" id="dkim-status-pill">
+                <span class="dot" aria-hidden="true"></span>
+                <span class="status-text"></span>
+              </span>
+            </header>
+            <div class="result-body">
+              <p class="explain"></p>
+              <p class="explain-note" hidden></p>
+              <div class="record-block" hidden></div>
+              <div class="why-block" hidden>
+                <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
+                <p class="why-body"></p>
+                <div class="why-divider"></div>
+                <a href="#consult-block-top" class="why-cta">
+                  メールで詳細を相談する
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- DMARC結果カード -->
+          <article class="result-card" data-testid="dmarc-result">
+            <header class="result-head">
+              <div class="result-title">
+                <div class="result-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+                </div>
+                <div>
+                  <h3>DMARC（運用ポリシー）</h3>
+                  <p class="sub">Domain-based Message Authentication</p>
+                </div>
+              </div>
+              <span class="status-pill" id="dmarc-status-pill">
+                <span class="dot" aria-hidden="true"></span>
+                <span class="status-text"></span>
+              </span>
+            </header>
+            <div class="result-body">
+              <p class="explain"></p>
+              <div class="record-block" hidden></div>
+              <div class="why-block" hidden>
+                <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
+                <p class="why-body"></p>
+                <div class="why-divider"></div>
+                <a href="#consult-block-top" class="why-cta">
+                  メールで詳細を相談する
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+              </div>
+            </div>
+          </article>
         </div>
 
-        <!-- CTA（Call to Action） -->
-        <div id="cta-section" class="cta-section">
-          <p class="cta-message"></p>
-          <button id="cta-button" class="cta-button" type="button"></button>
-          <a id="cta-link" class="cta-link" href="#"></a>
+        <!-- CONSULT BLOCK (TOP CTA — 結果直後) -->
+        <section class="consult-block" id="consult-block-top" aria-labelledby="consult-top-title">
+          <h3 id="consult-top-title">無料でメール相談する</h3>
+          <p class="consult-lead" id="consult-top-lead">気になる点や設定方法など、お気軽にメールでご相談ください。</p>
+          <div class="consult-form">
+            <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+              無料でメール相談する
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
+        </section>
+
+        <!-- EDUCATION ACCORDION -->
+        <p class="edu-title">学習コンテンツ</p>
+        <div class="accordion" id="edu-accordion">
+          <details data-section="how">
+            <summary aria-expanded="false">
+              <h4><span class="num-circle">01</span> SPF・DKIM・DMARC の仕組み</h4>
+              <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+            </summary>
+            <div class="panel">
+              <p>3つは「メールの本人確認」を多層で行う仕組みです。それぞれ役割が違います。</p>
+              <div class="protocol-row">
+                <div class="pcard"><strong>SPF</strong><p>送ってOKなサーバーを登録する「住所録」。許可外の送信元を見分けます。</p></div>
+                <div class="pcard"><strong>DKIM</strong><p>メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。</p></div>
+                <div class="pcard"><strong>DMARC</strong><p>SPF/DKIMの結果を踏まえた「運用ポリシー」。不正メールの扱いを決めます。</p></div>
+              </div>
+            </div>
+          </details>
+          <details data-section="why">
+            <summary aria-expanded="false">
+              <h4><span class="num-circle">02</span> なぜ設定が必要なのか</h4>
+              <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+            </summary>
+            <div class="panel">
+              <p>Gmail / Yahoo / Outlook は 2024年以降、送信ドメインの認証を強く求めるようになりました。設定が不完全だと、相手の迷惑メールフォルダに振り分けられたり、配信が拒否されることがあります。</p>
+              <ul>
+                <li>取引先にメールが届かない状況を防ぐ</li>
+                <li>自社ドメインのなりすまし被害を抑える</li>
+                <li>「セキュリティ意識の高い会社」という信頼を維持する</li>
+              </ul>
+            </div>
+          </details>
+          <details data-section="priority">
+            <summary aria-expanded="false">
+              <h4><span class="num-circle">03</span> 設定の優先順位</h4>
+              <span class="meta"><span>読了 1分</span><span class="toggle" aria-hidden="true">+</span></span>
+            </summary>
+            <div class="panel">
+              <ol>
+                <li><strong>SPF</strong> — DNSにTXTレコードを1行追加するだけ。最初に必ず設定</li>
+                <li><strong>DKIM</strong> — 使っているメールサービス側で署名を有効化</li>
+                <li><strong>DMARC</strong> — まずは監視モードから開始</li>
+              </ol>
+            </div>
+          </details>
+          <details data-section="faq">
+            <summary aria-expanded="false">
+              <h4><span class="num-circle">04</span> よくある質問</h4>
+              <span class="meta"><span>読了 3分</span><span class="toggle" aria-hidden="true">+</span></span>
+            </summary>
+            <div class="panel">
+              <p><strong>Q. 設定の反映には時間がかかりますか？</strong></p>
+              <p>DNSの伝播に通常15分〜数時間。反映後に再診断してください。</p>
+              <p><strong>Q. DMARCを設定するとメールが届かなくなりませんか？</strong></p>
+              <p>最初は監視モードで始めれば、配信に影響はありません。レポートを見ながら徐々に強化します。</p>
+            </div>
+          </details>
         </div>
+
+        <!-- CONSULT BLOCK (BOTTOM CTA — 末尾) -->
+        <section class="consult-block" id="consult-block-bottom">
+          <h3>無料でメール相談する</h3>
+          <p class="consult-lead">気になる点や設定方法など、お気軽にメールでご相談ください。</p>
+          <div class="consult-form">
+            <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+              無料でメール相談する
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
+        </section>
       </section>
     </main>
-
-    <!-- 教育コンテンツ -->
-    <div class="education-content">
-      <!-- 3プロトコル説明 -->
-      <section class="protocol-section">
-        <h2 class="section-title">SPF・DKIM・DMARCとは？</h2>
-        <div class="protocol-cards">
-          <article class="protocol-card spf-card">
-            <div class="protocol-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12s2.545-5 7-5c4.454 0 7 5 7 5s-2.546 5-7 5c-4.455 0-7-5-7-5z"/>
-                <path d="M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
-                <path d="M21 17v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2"/>
-                <path d="M21 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2"/>
-              </svg>
-            </div>
-            <h3>SPF</h3>
-            <p class="protocol-role">送信元サーバーの許可設定</p>
-            <p class="protocol-description">「このサーバーから送ってOKです」という許可リストをDNSに登録する設定です。許可されていないサーバーから送られたメールを怪しいと判定できます。</p>
-            <p class="protocol-tagline">＝送信元の住所の登録</p>
-          </article>
-
-          <article class="protocol-card dkim-card">
-            <div class="protocol-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                <path d="M9 12l2 2 4-4"/>
-              </svg>
-            </div>
-            <h3>DKIM</h3>
-            <p class="protocol-role">メールの電子サイン</p>
-            <p class="protocol-description">メールに電子サインをつけて、「このメールは本物です」と証明します。途中で改ざんされていないことも確認できます。</p>
-            <p class="protocol-tagline">＝本物の証明書</p>
-          </article>
-
-          <article class="protocol-card dmarc-card">
-            <div class="protocol-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M16 8l-2 2-4-4-4 4-2-2"/>
-                <path d="M12 12v5"/>
-              </svg>
-            </div>
-            <h3>DMARC</h3>
-            <p class="protocol-role">怪しいメールのルール設定</p>
-            <p class="protocol-description">SPFやDKIMの結果をもとに、怪しいメールを「どう扱うか」を決めるルールです。偽装メールの最終防衛ラインです。</p>
-            <p class="protocol-tagline">＝ルールと監視</p>
-          </article>
-        </div>
-      </section>
-
-      <!-- アナロジーセクション -->
-      <section class="analogy-section">
-        <h2 class="section-title">身近な例えで理解する</h2>
-        <div class="analogy-cards">
-          <article class="analogy-card">
-            <div class="analogy-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-              </svg>
-            </div>
-            <h3>SPF ＝ 住所登録</h3>
-            <p>「うちの会社からメールを送るのは、このサーバーだけです」と登録するイメージ。登録されていない住所から届いたメールは怪しいと分かります。</p>
-          </article>
-
-          <article class="analogy-card">
-            <div class="analogy-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 11H3v10h18V11h-6M9 11V3h6v8"/>
-                <line x1="12" y1="8" x2="12" y2="12"/>
-                <circle cx="12" cy="15" r="1"/>
-              </svg>
-            </div>
-            <h3>DKIM ＝ 実印</h3>
-            <p>会社の実印を押すように、メールに電子サインを付けます。サインがあれば「本物の会社から送られた本物のメール」だと証明できます。</p>
-          </article>
-
-          <article class="analogy-card">
-            <div class="analogy-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/>
-              </svg>
-            </div>
-            <h3>DMARC ＝ 警察</h3>
-            <p>住所や実印をチェックして、怪しいメールを見つけたら「捨てる」「隔離する」「そのまま通す」の指示を出すルールです。</p>
-          </article>
-        </div>
-      </section>
-
-      <!-- なぜ必要？セクション -->
-      <section class="why-section">
-        <h2 class="section-title">なぜこれらの設定が必要なのか？</h2>
-        <div class="why-cards">
-          <article class="why-card">
-            <div class="why-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                <path d="M14.05 2a9 9 0 0 1 8 7.94"/>
-                <path d="M14.05 6A5 5 0 0 1 18 10"/>
-              </svg>
-            </div>
-            <h3>迷惑メールフォルダに入らないため</h3>
-            <p>SPF・DKIM・DMARCが設定されていないメールは、GmailやOutlookに「怪しいメール」と判定され、迷惑メールフォルダに振り分けられる可能性が高くなります。</p>
-          </article>
-
-          <article class="why-card">
-            <div class="why-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                <line x1="12" y1="22.08" x2="12" y2="12"/>
-              </svg>
-            </div>
-            <h3>偽装メールから会社を守るため</h3>
-            <p>悪い人があなたの会社名を騙ってメールを送ることができてしまいます。これらの設定があれば、偽物を見分けられます。</p>
-          </article>
-
-          <article class="why-card">
-            <div class="why-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="8.5" cy="7" r="4"/>
-                <polyline points="17 11 19 13 23 9"/>
-              </svg>
-            </div>
-            <h3>会社の信頼を守るため</h3>
-            <p>メール認証設定がないと「セキュリティ意識の低い会社」と思われる可能性があります。ビジネスメールの信頼性を保つために重要です。</p>
-          </article>
-
-          <article class="why-card">
-            <div class="why-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-            </div>
-            <h3>配信状況を監視するため</h3>
-            <p>DMARCレポートを受け取ることで、「誰かが会社名を騙っていないか」「正規のメールがちゃんと届いているか」を監視できます。</p>
-          </article>
-        </div>
-      </section>
-
-      <!-- 優先順位ガイド -->
-      <section class="priority-section">
-        <h2 class="section-title">設定の優先順位</h2>
-        <div class="priority-guide">
-          <div class="priority-item priority-high">
-            <div class="priority-number">1</div>
-            <div class="priority-content">
-              <h3>まずはSPFから</h3>
-              <p>最も基本的で、設定も簡単です。DNSにTXTレコードを1行追加するだけで完了します。</p>
-            </div>
-          </div>
-
-          <div class="priority-item priority-medium">
-            <div class="priority-number">2</div>
-            <div class="priority-content">
-              <h3>次にDKIM</h3>
-              <p>メール送信サーバーで電子サインの設定が必要です。使っているメールサービスのマニュアルを確認しましょう。</p>
-            </div>
-          </div>
-
-          <div class="priority-item priority-normal">
-            <div class="priority-number">3</div>
-            <div class="priority-content">
-              <h3>最後にDMARC</h3>
-              <p>SPFとDKIMが設定済みであることが前提です。最初は「監視のみ（p=none）」から始めて、徐々に厳しくしていきます。</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
   </div>
 
   <script type="module" src="/src/main.js"></script>

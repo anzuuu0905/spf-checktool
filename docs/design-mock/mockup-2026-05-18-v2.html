@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>なりすまし対策診断｜デザインモック v2（4パターン比較）</title>
+<style>
+  /* ==========================================================
+     Cursor-inspired Design Tokens (warm cream canvas)
+     v2: 信号機3色 + ラベル + 達成率の表現
+     ========================================================== */
+  :root {
+    --canvas:       #f7f7f4;
+    --surface:      #ffffff;
+    --surface-soft: #fbfbf8;
+    --ink:          #26251e;
+    --body:         #5a5852;
+    --muted:        #807d72;
+    --muted-soft:   #a09c92;
+    --hairline:     #e6e5e0;
+    --hairline-soft:#efeee8;
+    --hairline-strong:#cfcdc4;
+
+    --primary:      #f54e00; /* Cursor orange */
+    --primary-hover:#d04200;
+    --primary-soft: #fff1e7;
+
+    /* Signal colors (WCAG AA: 4.5:1 以上を確保) */
+    --green:        #16A34A;
+    --green-soft:   #ecf6ee;
+    --green-text:   #0f7c39;
+    --amber:        #D97706;
+    --amber-soft:   #fdf5e6;
+    --amber-text:   #92590a;
+    --red:          #C0392B;
+    --red-soft:     #fbeceb;
+    --red-text:     #a52a1f;
+
+    /* Neutral navy accent for stats */
+    --navy:         #1f2a44;
+
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    background: var(--canvas);
+    color: var(--body);
+    line-height: 1.65;
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+  }
+  .tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+  /* ==========================================================
+     Mock-only navigation bar
+     ========================================================== */
+  .mock-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .mock-bar .mock-title { font-weight: 500; letter-spacing: 0.01em; }
+  .mock-bar .mock-title small { color: #a09c92; margin-left: 8px; font-weight: 400; }
+  .mock-nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mock-nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.18);
+    transition: background 0.15s;
+  }
+  .mock-nav a:hover { background: rgba(255,255,255,0.08); }
+  .mock-nav a.green  { border-color: rgba(22,163,74,0.7);  }
+  .mock-nav a.amber  { border-color: rgba(217,119,6,0.7); }
+  .mock-nav a.red    { border-color: rgba(192,57,43,0.7);  }
+
+  .pattern-divider {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--hairline-strong), transparent);
+    margin: 0;
+  }
+  .pattern-label {
+    background: var(--surface);
+    border-bottom: 1px solid var(--hairline);
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .pattern-label .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .pattern-label .badge.green { background: var(--green-soft); color: var(--green-text); }
+  .pattern-label .badge.amber { background: var(--amber-soft); color: var(--amber-text); }
+  .pattern-label .badge.red   { background: var(--red-soft);   color: var(--red-text);  }
+  .pattern-label h2 {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .pattern-label p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* ==========================================================
+     Main container
+     ========================================================== */
+  .container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  /* ==========================================================
+     Hero
+     ========================================================== */
+  .hero { text-align: center; margin-bottom: 48px; }
+  .hero h1 {
+    font-size: clamp(26px, 3.6vw, 38px);
+    font-weight: 500;
+    line-height: 1.28;
+    letter-spacing: -0.022em;
+    color: var(--ink);
+    margin-bottom: 18px;
+    max-width: 780px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero .lead {
+    font-size: 15.5px;
+    color: var(--body);
+    max-width: 680px;
+    margin: 0 auto 22px;
+    line-height: 1.75;
+  }
+
+  /* Trust badges (very small, gray) */
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 32px;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: var(--muted);
+    padding: 3px 9px;
+    background: transparent;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+  .hero-badge::before {
+    content: "";
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--muted-soft);
+  }
+
+  /* Domain check form (hero) */
+  .check-card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    max-width: 640px;
+    margin: 0 auto 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    box-shadow: 0 1px 0 rgba(38,37,30,0.02);
+  }
+  .check-card .input-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    border-right: 1px solid var(--hairline);
+  }
+  .check-card .input-wrap svg { color: var(--muted-soft); flex: none; }
+  .check-card input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: var(--ink);
+    font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    background: transparent;
+    padding: 14px 0;
+    letter-spacing: -0.01em;
+  }
+  .check-card input::placeholder { color: var(--muted-soft); }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.05s;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:active { transform: translateY(1px); }
+  .check-note {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 56px;
+  }
+
+  /* ==========================================================
+     Stats row (3 cards: "今やる理由")
+     ========================================================== */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    max-width: 960px;
+    margin: 0 auto 64px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-left: 2px solid var(--navy);
+    border-radius: var(--radius-md);
+    padding: 22px 22px 20px;
+    position: relative;
+  }
+  .stat-card .stat-source {
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .stat-card .stat-num {
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--navy);
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-card .stat-num .unit {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--navy);
+    margin-left: 2px;
+    letter-spacing: -0.01em;
+  }
+  .stat-card .stat-desc {
+    font-size: 13.5px;
+    color: var(--body);
+    line-height: 1.6;
+  }
+
+  /* ==========================================================
+     Verdict banner (v2: signal+label+progress, NO numeric score)
+     ========================================================== */
+  .verdict {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    display: grid;
+    grid-template-columns: minmax(220px, auto) 1fr;
+    gap: 32px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .verdict::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+  }
+  .verdict.is-green::before { background: var(--green); }
+  .verdict.is-amber::before { background: var(--amber); }
+  .verdict.is-red::before   { background: var(--red);   }
+
+  /* Verdict left: label + check dots (達成率) */
+  .verdict-state {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .verdict-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    width: fit-content;
+  }
+  .verdict-label .lbl-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .verdict.is-green .verdict-label {
+    background: var(--green-soft);
+    color: var(--green-text);
+  }
+  .verdict.is-green .verdict-label .lbl-dot { background: var(--green); }
+  .verdict.is-amber .verdict-label {
+    background: var(--amber-soft);
+    color: var(--amber-text);
+  }
+  .verdict.is-amber .verdict-label .lbl-dot { background: var(--amber); }
+  .verdict.is-red .verdict-label {
+    background: var(--red-soft);
+    color: var(--red-text);
+  }
+  .verdict.is-red .verdict-label .lbl-dot { background: var(--red); }
+
+  /* Progress: 3 check marks */
+  .check-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .check-progress .cp-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    margin-right: 4px;
+  }
+  .check-progress .cp-num {
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .check-marks {
+    display: inline-flex;
+    gap: 6px;
+  }
+  .check-marks .cm {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--hairline-strong);
+    background: var(--surface);
+    display: grid;
+    place-items: center;
+    color: transparent;
+    transition: all 0.15s;
+  }
+  .check-marks .cm svg { width: 12px; height: 12px; }
+  .check-marks .cm.is-done {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+
+  /* Verdict right: signals + summary */
+  .verdict-right {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .signals {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .signal {
+    flex: 1;
+    min-width: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 12px 12px;
+    background: var(--surface-soft);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    position: relative;
+  }
+  .signal .lamp {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--hairline-strong);
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,0.04);
+    flex: none;
+    margin-bottom: 2px;
+  }
+  .signal.on-green .lamp {
+    background: var(--green);
+    box-shadow: 0 0 0 4px rgba(22,163,74,0.15);
+  }
+  .signal.on-amber .lamp {
+    background: var(--amber);
+    box-shadow: 0 0 0 4px rgba(217,119,6,0.18);
+  }
+  .signal.on-red .lamp {
+    background: var(--red);
+    box-shadow: 0 0 0 4px rgba(192,57,43,0.15);
+  }
+  .signal.is-off { opacity: 0.38; }
+  .signal .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.06em;
+  }
+  .signal .state {
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .signal.on-green .state { color: var(--green-text); }
+  .signal.on-amber .state { color: var(--amber-text); }
+  .signal.on-red   .state { color: var(--red-text);  }
+  .verdict-summary {
+    font-size: 14.5px;
+    color: var(--body);
+    line-height: 1.7;
+  }
+
+  /* ==========================================================
+     Result cards (SPF / DKIM / DMARC)
+     ========================================================== */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .result-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .result-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .result-icon {
+    width: 38px; height: 38px;
+    display: grid; place-items: center;
+    background: var(--surface-soft);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    color: var(--muted);
+    flex: none;
+  }
+  .result-title h3 {
+    font-size: 15.5px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 2px;
+    letter-spacing: -0.01em;
+  }
+  .result-title .sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--hairline);
+    background: var(--surface-soft);
+    color: var(--body);
+  }
+  .status-pill .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--hairline-strong);
+    flex: none;
+  }
+  .status-pill.is-green { background: var(--green-soft); color: var(--green-text); border-color: rgba(22,163,74,0.25); }
+  .status-pill.is-green .dot { background: var(--green); }
+  .status-pill.is-amber { background: var(--amber-soft); color: var(--amber-text); border-color: rgba(217,119,6,0.28); }
+  .status-pill.is-amber .dot { background: var(--amber); }
+  .status-pill.is-red { background: var(--red-soft); color: var(--red-text); border-color: rgba(192,57,43,0.25); }
+  .status-pill.is-red .dot { background: var(--red); }
+
+  .result-body {
+    padding: 0 24px 20px;
+    border-top: 1px solid var(--hairline-soft);
+    padding-top: 18px;
+  }
+  .result-body .explain {
+    font-size: 14px;
+    color: var(--body);
+    margin-bottom: 12px;
+    line-height: 1.65;
+  }
+  .record-block {
+    background: var(--surface-soft);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .record-block .key { color: var(--primary); }
+
+  /* v2: compressed fix guide (1-2 lines + jump CTA) */
+  .why-block {
+    margin-top: 16px;
+    background: var(--surface-soft);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+  }
+  .why-block .why-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.01em;
+  }
+  .why-block .why-title .mark {
+    color: var(--amber-text);
+    font-size: 14px;
+  }
+  .why-block.is-red .why-title .mark { color: var(--red-text); }
+  .why-block .why-body {
+    font-size: 13.5px;
+    color: var(--body);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .why-block .why-divider {
+    height: 1px;
+    background: var(--hairline);
+    margin: 0 -16px 12px;
+  }
+  .why-block .why-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 7px 12px;
+    background: var(--surface);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-sm);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .why-block .why-cta:hover {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .why-block .why-cta svg { transition: transform 0.15s; }
+  .why-block .why-cta:hover svg { transform: translateX(2px); }
+
+  /* ==========================================================
+     Main CTA block (consultation form)
+     ========================================================== */
+  .consult-block {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xl);
+    padding: 36px 32px 32px;
+    margin-bottom: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .consult-block::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--primary);
+  }
+  .consult-block h3 {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .consult-block .consult-lead {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-bottom: 22px;
+    line-height: 1.6;
+  }
+  .consult-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 480px;
+  }
+  .consult-form label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .consult-form .field input {
+    width: 100%;
+    border: 1px solid var(--hairline-strong);
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-size: 14.5px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+  }
+  .consult-form .field input::placeholder { color: var(--muted-soft); }
+  .consult-form .field input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(245,78,0,0.12);
+  }
+  .consult-form .btn-cta {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 14px 22px;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    width: 100%;
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .consult-form .btn-cta:hover { background: var(--primary-hover); }
+  .consult-form .btn-cta svg { transition: transform 0.15s; }
+  .consult-form .btn-cta:hover svg { transform: translateX(3px); }
+  .consult-form .sub-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .consult-form .sub-note::before {
+    content: "✓ ";
+    color: var(--green-text);
+    font-weight: 600;
+  }
+
+  /* ==========================================================
+     Education accordion
+     ========================================================== */
+  .edu-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .accordion {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .accordion details { border-bottom: 1px solid var(--hairline); }
+  .accordion details:last-child { border-bottom: none; }
+  .accordion summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    transition: background 0.15s;
+  }
+  .accordion summary::-webkit-details-marker { display: none; }
+  .accordion summary:hover { background: var(--surface-soft); }
+  .accordion summary:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+  }
+  .accordion summary h4 {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.01em;
+  }
+  .accordion summary h4 .num-circle {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--surface-soft);
+    border: 1px solid var(--hairline-strong);
+    color: var(--muted);
+    display: grid; place-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .accordion summary .meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .accordion summary .toggle {
+    width: 24px; height: 24px;
+    display: grid; place-items: center;
+    background: var(--surface-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    color: var(--muted);
+    flex: none;
+    transition: transform 0.2s, background 0.15s;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .accordion details[open] summary .toggle {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+    transform: rotate(45deg);
+  }
+  .accordion .panel {
+    padding: 4px 24px 24px;
+    color: var(--body);
+    font-size: 14px;
+    line-height: 1.75;
+  }
+  .accordion .panel p + p { margin-top: 10px; }
+  .accordion .panel ul, .accordion .panel ol { margin: 10px 0 4px 20px; }
+  .accordion .panel li { margin-bottom: 6px; }
+  .accordion .panel .protocol-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 6px;
+  }
+  .accordion .panel .protocol-row .pcard {
+    background: var(--surface-soft);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    padding: 14px;
+  }
+  .accordion .panel .protocol-row .pcard strong {
+    display: block;
+    color: var(--ink);
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .accordion .panel .protocol-row .pcard p { font-size: 12.5px; color: var(--body); }
+  .accordion .panel code {
+    background: var(--surface-soft);
+    border: 1px solid var(--hairline);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--ink);
+  }
+
+  /* ==========================================================
+     Mobile
+     ========================================================== */
+  @media (max-width: 920px) {
+    .stats-row { grid-template-columns: 1fr; gap: 12px; }
+    .verdict { grid-template-columns: 1fr; gap: 22px; padding: 24px; }
+  }
+  @media (max-width: 720px) {
+    .signals { gap: 8px; }
+    .signal { min-width: 0; padding: 12px 8px; }
+    .check-card { flex-direction: column; align-items: stretch; padding: 12px; gap: 8px; }
+    .check-card .input-wrap { border-right: none; border-bottom: 1px solid var(--hairline); padding: 4px 10px; }
+    .btn-primary { width: 100%; }
+    .container { padding: 36px 16px 60px; }
+    .result-head { padding: 16px 18px; }
+    .result-body { padding: 14px 18px 18px; }
+    .accordion summary { padding: 16px 18px; }
+    .accordion .panel { padding: 0 18px 18px; }
+    .accordion .panel .protocol-row { grid-template-columns: 1fr; }
+    .stat-card { padding: 18px 18px 16px; }
+    .stat-card .stat-num { font-size: 34px; }
+    .consult-block { padding: 26px 22px 22px; }
+  }
+  @media (max-width: 420px) {
+    .hero h1 { font-size: 22px; }
+    .pattern-label h2 { font-size: 18px; }
+    .verdict { padding: 20px; }
+    .check-marks .cm { width: 20px; height: 20px; }
+  }
+
+  /* Visually hidden */
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===========================================================
+     Mock-only navigation bar (4 patterns)
+     =========================================================== -->
+<div class="mock-bar" role="navigation" aria-label="モックパターン切替">
+  <div class="mock-title">
+    なりすまし対策診断 — Mockup v2
+    <small>2026-05-18 / 4 patterns for review</small>
+  </div>
+  <nav class="mock-nav" aria-label="パターンへジャンプ">
+    <a href="#pattern-green" class="green">① 全合格 / 安全</a>
+    <a href="#pattern-spf-only" class="red">② SPFのみ / 要対応</a>
+    <a href="#pattern-amber" class="amber">③ SPF+DKIM / 要改善</a>
+    <a href="#pattern-red"   class="red">④ 全不合格 / 要対応</a>
+  </nav>
+</div>
+
+
+<!-- ==================================================================
+     PATTERN 1 — GREEN (all pass, 安全 3/3)
+     ================================================================== -->
+<section id="pattern-green" aria-labelledby="p1-label">
+  <div class="pattern-label">
+    <span class="badge green">Pattern 1 / 全合格</span>
+    <h2 id="p1-label">SPF・DKIM・DMARC すべて設定済み</h2>
+    <p>安全 ・ 3項目クリア ・ 緑シグナル</p>
+  </div>
+
+  <div class="container">
+    <!-- HERO -->
+    <header class="hero">
+      <h1>30秒でメール到達リスクを診断</h1>
+      <p class="lead">ドメインを入力するだけで、SPF・DKIM・DMARC の設定状況を確認できます。</p>
+
+      <div class="hero-badges" aria-label="サービスの特徴">
+        <span class="hero-badge">30秒で完了</span>
+        <span class="hero-badge">無料</span>
+        <span class="hero-badge">登録不要</span>
+      </div>
+
+      <form class="check-card" onsubmit="event.preventDefault()" role="search">
+        <div class="input-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <label for="d1" class="visually-hidden">ドメイン</label>
+          <input id="d1" type="text" value="example-good.com" aria-label="ドメイン名">
+        </div>
+        <button type="submit" class="btn-primary">診断する</button>
+      </form>
+      <p class="check-note">入力したドメイン情報は保存されません</p>
+    </header>
+
+    <!-- VERDICT BANNER -->
+    <section class="verdict is-green" aria-live="polite">
+      <div class="verdict-state">
+        <span class="verdict-label">
+          <span class="lbl-dot" aria-hidden="true"></span>
+          安全
+        </span>
+        <div class="check-progress" aria-label="達成率: 3項目中3項目クリア">
+          <span class="cp-label">達成率</span>
+          <span class="check-marks" aria-hidden="true">
+            <span class="cm is-done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="cm is-done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="cm is-done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </span>
+          <span class="cp-num tabular">3項目中3項目クリア</span>
+        </div>
+      </div>
+      <div class="verdict-right">
+        <div class="signals" role="group" aria-label="プロトコル別シグナル">
+          <div class="signal on-green" aria-label="SPF: 設定済み">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">SPF</span>
+            <span class="state">設定済み</span>
+          </div>
+          <div class="signal on-green" aria-label="DKIM: 設定済み">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">DKIM</span>
+            <span class="state">設定済み</span>
+          </div>
+          <div class="signal on-green" aria-label="DMARC: 設定済み">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">DMARC</span>
+            <span class="state">設定済み</span>
+          </div>
+        </div>
+        <p class="verdict-summary">3項目すべて設定済みです。</p>
+      </div>
+    </section>
+
+    <!-- RESULT CARDS -->
+    <div class="results-grid">
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+            </div>
+            <div>
+              <h3>SPF（送信元サーバーの許可）</h3>
+              <p class="sub">Sender Policy Framework</p>
+            </div>
+          </div>
+          <span class="status-pill is-green"><span class="dot" aria-hidden="true"></span>設定済み</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">許可された送信サーバーがDNSに正しく登録されています。</p>
+          <div class="record-block"><span class="key">v=spf1</span> include:_spf.google.com ~all</div>
+        </div>
+      </article>
+
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <div>
+              <h3>DKIM（電子サイン）</h3>
+              <p class="sub">DomainKeys Identified Mail</p>
+            </div>
+          </div>
+          <span class="status-pill is-green"><span class="dot" aria-hidden="true"></span>設定済み</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">公開鍵が発見でき、メールへの署名が検証可能な状態です。</p>
+          <div class="record-block"><span class="key">v=DKIM1</span>; k=rsa; p=MIIBIjANBgkqhki...</div>
+        </div>
+      </article>
+
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+            </div>
+            <div>
+              <h3>DMARC（運用ポリシー）</h3>
+              <p class="sub">Domain-based Message Authentication</p>
+            </div>
+          </div>
+          <span class="status-pill is-green"><span class="dot" aria-hidden="true"></span>設定済み</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">なりすまし対策のポリシーが設定されています。レポートも受信中です。</p>
+          <div class="record-block"><span class="key">v=DMARC1</span>; p=quarantine; rua=mailto:dmarc@example-good.com</div>
+        </div>
+      </article>
+    </div>
+
+    <!-- CONSULT FORM -->
+    <section class="consult-block" id="consult-p1" aria-labelledby="consult-p1-title">
+      <h3 id="consult-p1-title">無料でメール相談する</h3>
+      <p class="consult-lead">追加で気になることや、関連会社・取引先のチェックも一緒に対応します。お気軽にどうぞ。</p>
+      <div class="consult-form">
+        <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+          無料でメール相談する
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- EDUCATION ACCORDION -->
+    <p class="edu-title">学習コンテンツ</p>
+    <div class="accordion">
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">01</span> SPF・DKIM・DMARC の仕組み</h4>
+          <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p>3つは「メールの本人確認」を多層で行う仕組みです。それぞれ役割が違います。</p>
+          <div class="protocol-row">
+            <div class="pcard"><strong>SPF</strong><p>送ってOKなサーバーを登録する「住所録」。許可外の送信元を見分けます。</p></div>
+            <div class="pcard"><strong>DKIM</strong><p>メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。</p></div>
+            <div class="pcard"><strong>DMARC</strong><p>SPF/DKIMの結果を踏まえた「運用ルール」。不正メールの扱いを決めます。</p></div>
+          </div>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">02</span> なぜ設定が必要なのか</h4>
+          <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p>Gmail / Yahoo / Outlook は 2024年以降、送信ドメインの認証を強く求めるようになりました。設定が不完全だと、相手の迷惑メールフォルダに振り分けられたり、配信が拒否されることがあります。</p>
+          <ul>
+            <li>取引先にメールが届かない状況を防ぐ</li>
+            <li>自社ドメインのなりすまし被害を抑える</li>
+            <li>「セキュリティ意識の高い会社」という信頼を維持する</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">03</span> 設定の優先順位</h4>
+          <span class="meta"><span>読了 1分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <ol>
+            <li><strong>SPF</strong> — DNSにTXTレコードを1行追加するだけ。最初に必ず設定</li>
+            <li><strong>DKIM</strong> — 使っているメールサービス側で署名を有効化</li>
+            <li><strong>DMARC</strong> — まずは監視モードから開始</li>
+          </ol>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">04</span> よくある質問</h4>
+          <span class="meta"><span>読了 3分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p><strong>Q. 設定の反映には時間がかかりますか？</strong></p>
+          <p>DNSの伝播に通常15分〜数時間。反映後に再診断してください。</p>
+          <p><strong>Q. 設定後に届かなくなることはありますか？</strong></p>
+          <p>SPFを過剰に厳しくすると正規メールも弾かれます。最初は <code>~all</code> から始めましょう。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- CONSULT FORM (bottom) -->
+    <section class="consult-block">
+      <h3>無料でメール相談する</h3>
+      <p class="consult-lead">気になる点や設定方法など、お気軽にメールでご相談ください。</p>
+      <div class="consult-form">
+        <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+          無料でメール相談する
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+  </div>
+</section>
+
+<hr class="pattern-divider">
+
+
+<!-- ==================================================================
+     PATTERN 2 — RED-LIGHT (SPF only, 要対応 1/3)
+     ================================================================== -->
+<section id="pattern-spf-only" aria-labelledby="p2-label">
+  <div class="pattern-label">
+    <span class="badge red">Pattern 2 / SPFのみ</span>
+    <h2 id="p2-label">SPF は設定済み／DKIM・DMARC 未検出</h2>
+    <p>要対応 ・ 3項目中1項目クリア ・ 赤シグナル（SPFのみではなりすまし防止不十分）</p>
+  </div>
+
+  <div class="container">
+    <!-- HERO (identical content) -->
+    <header class="hero">
+      <h1>30秒でメール到達リスクを診断</h1>
+      <p class="lead">ドメインを入力するだけで、SPF・DKIM・DMARC の設定状況を確認できます。</p>
+
+      <div class="hero-badges" aria-label="サービスの特徴">
+        <span class="hero-badge">30秒で完了</span>
+        <span class="hero-badge">無料</span>
+        <span class="hero-badge">登録不要</span>
+      </div>
+
+      <form class="check-card" onsubmit="event.preventDefault()" role="search">
+        <div class="input-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input id="d2" type="text" value="example-spf-only.com" aria-label="ドメイン名">
+        </div>
+        <button type="submit" class="btn-primary">診断する</button>
+      </form>
+      <p class="check-note">入力したドメイン情報は保存されません</p>
+    </header>
+
+    <!-- STATS ROW -->
+    <!-- VERDICT BANNER: SPF only = 要対応（赤） -->
+    <section class="verdict is-red" aria-live="polite">
+      <div class="verdict-state">
+        <span class="verdict-label">
+          <span class="lbl-dot" aria-hidden="true"></span>
+          要対応
+        </span>
+        <div class="check-progress" aria-label="達成率: 3項目中1項目クリア">
+          <span class="cp-label">達成率</span>
+          <span class="check-marks" aria-hidden="true">
+            <span class="cm is-done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="cm"></span>
+            <span class="cm"></span>
+          </span>
+          <span class="cp-num tabular">3項目中1項目クリア</span>
+        </div>
+      </div>
+      <div class="verdict-right">
+        <div class="signals" role="group" aria-label="プロトコル別シグナル">
+          <div class="signal on-green" aria-label="SPF: 設定済み">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">SPF</span>
+            <span class="state">設定済み</span>
+          </div>
+          <div class="signal is-off" aria-label="DKIM: 未検出">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">DKIM</span>
+            <span class="state">未検出</span>
+          </div>
+          <div class="signal is-off" aria-label="DMARC: 未設定">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">DMARC</span>
+            <span class="state">未設定</span>
+          </div>
+        </div>
+        <p class="verdict-summary">SPF は設定済みですが、DKIM と DMARC の設定が確認できませんでした。この状態では、取引先に送ったメールが迷惑メールフォルダに振り分けられる可能性があります。</p>
+      </div>
+    </section>
+
+    <!-- RESULT CARDS -->
+    <div class="results-grid">
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+            </div>
+            <div>
+              <h3>SPF（送信元サーバーの許可）</h3>
+              <p class="sub">Sender Policy Framework</p>
+            </div>
+          </div>
+          <span class="status-pill is-green"><span class="dot" aria-hidden="true"></span>設定済み</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">許可された送信サーバーがDNSに登録されています。</p>
+          <div class="record-block"><span class="key">v=spf1</span> include:_spf.google.com ~all</div>
+        </div>
+      </article>
+
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <div>
+              <h3>DKIM（電子サイン）</h3>
+              <p class="sub">DomainKeys Identified Mail</p>
+            </div>
+          </div>
+          <span class="status-pill is-red"><span class="dot" aria-hidden="true"></span>未設定</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">Google Workspace・Microsoft 365・エックスサーバー など主要なメールサービス28種類の設定で確認しましたが、見つかりませんでした。<br><span style="font-size:12px;color:var(--muted-soft);">※ さくらインターネット・ロリポップ・Amazon SES 等の一部サービスは独自形式の設定を使うため、ドメインだけでは判定できないことがあります。</span></p>
+          <div class="why-block is-red">
+            <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
+            <p class="why-body">DKIM が見つからないと、取引先のGmail/Outlookなどで迷惑メールフォルダに振り分けられたり、メールが途中で書き換えられても気づけない状態になる可能性があります。</p>
+            <div class="why-divider"></div>
+            <a href="#consult-p2" class="why-cta">
+              メールで詳細を相談する
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            </div>
+            <div>
+              <h3>DMARC（運用ポリシー）</h3>
+              <p class="sub">Domain-based Message Authentication</p>
+            </div>
+          </div>
+          <span class="status-pill is-red"><span class="dot" aria-hidden="true"></span>未設定</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">DMARC の設定が見つかりませんでした。なりすましメールがあった場合のルールがまだ定まっていません。</p>
+          <div class="why-block is-red">
+            <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
+            <p class="why-body">現在の設定では、なりすましメールが取引先に届いてしまう可能性があります。あとから問題があったか確認するレポートも受け取れません。</p>
+            <div class="why-divider"></div>
+            <a href="#consult-p2" class="why-cta">
+              メールで詳細を相談する
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- CONSULT FORM -->
+    <section class="consult-block" id="consult-p2" aria-labelledby="consult-p2-title">
+      <h3 id="consult-p2-title">無料でメール相談する</h3>
+      <p class="consult-lead">DKIM・DMARC の追加設定方法、御社の利用サービス（Google Workspace / Microsoft 365 など）に応じた手順をメールでご案内します。</p>
+      <div class="consult-form">
+        <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+          無料でメール相談する
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- EDUCATION ACCORDION (why-section open by default for red) -->
+    <p class="edu-title">学習コンテンツ</p>
+    <div class="accordion">
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">01</span> SPF・DKIM・DMARC の仕組み</h4>
+          <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p>3つは「メールの本人確認」を多層で行う仕組みです。SPFだけでは不十分で、3つ揃って効果を発揮します。</p>
+          <div class="protocol-row">
+            <div class="pcard"><strong>SPF</strong><p>送ってOKなサーバーを登録する「住所録」。これだけでは改ざんを検出できません。</p></div>
+            <div class="pcard"><strong>DKIM</strong><p>メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。</p></div>
+            <div class="pcard"><strong>DMARC</strong><p>SPF/DKIMの結果を踏まえた「運用ルール」。これが無いと統合判定ができません。</p></div>
+          </div>
+        </div>
+      </details>
+      <details open>
+        <summary aria-expanded="true">
+          <h4><span class="num-circle">02</span> なぜ設定が必要なのか</h4>
+          <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p>Gmail / Yahoo / Outlook は 2024年以降、送信ドメインの認証を強く求めるようになりました。SPFのみでは要件を満たさず、相手の迷惑メールフォルダに振り分けられたり、配信が拒否されることがあります。</p>
+          <ul>
+            <li>取引先にメールが届かない状況を防ぐ</li>
+            <li>自社ドメインのなりすまし被害を抑える</li>
+            <li>「セキュリティ意識の高い会社」という信頼を維持する</li>
+          </ul>
+          <p>とくに DMARC は、SPF/DKIM がきちんと働いているかを「監視・運用」するための仕組みです。設定しないと、自社が気づかぬうちに偽装メールが発生していても検知できません。</p>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">03</span> 設定の優先順位</h4>
+          <span class="meta"><span>読了 1分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <ol>
+            <li><strong>SPF</strong> — 既に設定済み</li>
+            <li><strong>DKIM</strong> — 利用中のメールサービス側で署名を有効化</li>
+            <li><strong>DMARC</strong> — まずは監視モードから開始</li>
+          </ol>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">04</span> よくある質問</h4>
+          <span class="meta"><span>読了 3分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p><strong>Q. SPF だけでもメールは届きますよね？</strong></p>
+          <p>届くこともありますが、Gmail/Yahoo/Outlook の認証要件を満たさないため、迷惑メール扱いになる確率が上がります。なりすまし防止としても不十分です。</p>
+          <p><strong>Q. DMARCを設定するとメールが届かなくなりませんか？</strong></p>
+          <p>最初は監視モードで始めれば、配信に影響はありません。レポートを見ながら徐々に強化します。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- CONSULT FORM (bottom) -->
+    <section class="consult-block">
+      <h3>無料でメール相談する</h3>
+      <p class="consult-lead">気になる点や設定方法など、お気軽にメールでご相談ください。</p>
+      <div class="consult-form">
+        <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+          無料でメール相談する
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+  </div>
+</section>
+
+<hr class="pattern-divider">
+
+
+<!-- ==================================================================
+     PATTERN 3 — AMBER (SPF+DKIM, DMARC missing, 要改善 2/3)
+     ================================================================== -->
+<section id="pattern-amber" aria-labelledby="p3-label">
+  <div class="pattern-label">
+    <span class="badge amber">Pattern 3 / SPF+DKIM</span>
+    <h2 id="p3-label">SPF・DKIM は設定済み／DMARC 未設定</h2>
+    <p>要改善 ・ 3項目中2項目クリア ・ 黄シグナル</p>
+  </div>
+
+  <div class="container">
+    <header class="hero">
+      <h1>30秒でメール到達リスクを診断</h1>
+      <p class="lead">ドメインを入力するだけで、SPF・DKIM・DMARC の設定状況を確認できます。</p>
+
+      <div class="hero-badges" aria-label="サービスの特徴">
+        <span class="hero-badge">30秒で完了</span>
+        <span class="hero-badge">無料</span>
+        <span class="hero-badge">登録不要</span>
+      </div>
+
+      <form class="check-card" onsubmit="event.preventDefault()" role="search">
+        <div class="input-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input id="d3" type="text" value="example-partial.com" aria-label="ドメイン名">
+        </div>
+        <button type="submit" class="btn-primary">診断する</button>
+      </form>
+      <p class="check-note">入力したドメイン情報は保存されません</p>
+    </header>
+
+    <section class="verdict is-amber" aria-live="polite">
+      <div class="verdict-state">
+        <span class="verdict-label">
+          <span class="lbl-dot" aria-hidden="true"></span>
+          要改善
+        </span>
+        <div class="check-progress" aria-label="達成率: 3項目中2項目クリア">
+          <span class="cp-label">達成率</span>
+          <span class="check-marks" aria-hidden="true">
+            <span class="cm is-done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="cm is-done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="cm"></span>
+          </span>
+          <span class="cp-num tabular">3項目中2項目クリア</span>
+        </div>
+      </div>
+      <div class="verdict-right">
+        <div class="signals" role="group" aria-label="プロトコル別シグナル">
+          <div class="signal on-green" aria-label="SPF: 設定済み">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">SPF</span>
+            <span class="state">設定済み</span>
+          </div>
+          <div class="signal on-green" aria-label="DKIM: 設定済み">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">DKIM</span>
+            <span class="state">設定済み</span>
+          </div>
+          <div class="signal is-off" aria-label="DMARC: 未設定">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">DMARC</span>
+            <span class="state">未設定</span>
+          </div>
+        </div>
+        <p class="verdict-summary">SPF と DKIM は設定済みです。DMARC を追加設定すると、なりすまし対策がより確実になります。</p>
+      </div>
+    </section>
+
+    <div class="results-grid">
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+            </div>
+            <div>
+              <h3>SPF（送信元サーバーの許可）</h3>
+              <p class="sub">Sender Policy Framework</p>
+            </div>
+          </div>
+          <span class="status-pill is-green"><span class="dot" aria-hidden="true"></span>設定済み</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">許可された送信サーバーがDNSに正しく登録されています。</p>
+          <div class="record-block"><span class="key">v=spf1</span> include:_spf.google.com include:sendgrid.net ~all</div>
+        </div>
+      </article>
+
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <div>
+              <h3>DKIM（電子サイン）</h3>
+              <p class="sub">DomainKeys Identified Mail</p>
+            </div>
+          </div>
+          <span class="status-pill is-green"><span class="dot" aria-hidden="true"></span>設定済み</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">公開鍵が発見でき、メールへの署名が検証可能な状態です。</p>
+          <div class="record-block"><span class="key">v=DKIM1</span>; k=rsa; p=MIIBIjANBgkqhki...</div>
+        </div>
+      </article>
+
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            </div>
+            <div>
+              <h3>DMARC（運用ポリシー）</h3>
+              <p class="sub">Domain-based Message Authentication</p>
+            </div>
+          </div>
+          <span class="status-pill is-amber"><span class="dot" aria-hidden="true"></span>未設定</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">DMARC の設定が見つかりませんでした。SPF と DKIM が正しく動いているかを監視するルールが未設定です。</p>
+          <div class="why-block">
+            <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
+            <p class="why-body">SPF と DKIM の判定結果をまとめて運用するルールがまだ無く、なりすましメールが届いた場合の対処が決まっていません。</p>
+            <div class="why-divider"></div>
+            <a href="#consult-p3" class="why-cta">
+              メールで詳細を相談する
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- CONSULT FORM -->
+    <section class="consult-block" id="consult-p3" aria-labelledby="consult-p3-title">
+      <h3 id="consult-p3-title">無料でメール相談する</h3>
+      <p class="consult-lead">DMARC を追加で設定するには、最初は監視モードから始めれば配信に影響はありません。具体的な手順はメールでご案内します。</p>
+      <div class="consult-form">
+        <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+          無料でメール相談する
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <p class="edu-title">学習コンテンツ</p>
+    <div class="accordion">
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">01</span> SPF・DKIM・DMARC の仕組み</h4>
+          <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p>3つは「メールの本人確認」を多層で行う仕組みです。それぞれ役割が違います。</p>
+          <div class="protocol-row">
+            <div class="pcard"><strong>SPF</strong><p>送ってOKなサーバーを登録する「住所録」。許可外の送信元を見分けます。</p></div>
+            <div class="pcard"><strong>DKIM</strong><p>メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。</p></div>
+            <div class="pcard"><strong>DMARC</strong><p>SPF/DKIMの結果を踏まえた「運用ルール」。不正メールの扱いを決めます。</p></div>
+          </div>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">02</span> なぜ設定が必要なのか</h4>
+          <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p>Gmail / Yahoo / Outlook は 2024年以降、送信ドメインの認証を強く求めるようになりました。DMARC を設定しないと、SPF/DKIM が機能しているかの監視ができず、自社が気づかぬうちに偽装メールが発生していても検知できません。</p>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">03</span> 設定の優先順位</h4>
+          <span class="meta"><span>読了 1分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <ol>
+            <li><strong>SPF</strong> — 既に設定済み</li>
+            <li><strong>DKIM</strong> — 既に設定済み</li>
+            <li><strong>DMARC</strong> — まずは監視モードから開始</li>
+          </ol>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">04</span> よくある質問</h4>
+          <span class="meta"><span>読了 3分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p><strong>Q. DMARCを設定するとメールが届かなくなりませんか？</strong></p>
+          <p>最初は監視モードで始めれば、配信に影響はありません。レポートを見ながら徐々に強化します。</p>
+          <p><strong>Q. レポートはどこに届きますか？</strong></p>
+          <p><code>rua=</code> に指定したメールアドレスに、各受信サーバーから日次でXMLレポートが届きます。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- CONSULT FORM (bottom) -->
+    <section class="consult-block">
+      <h3>無料でメール相談する</h3>
+      <p class="consult-lead">気になる点や設定方法など、お気軽にメールでご相談ください。</p>
+      <div class="consult-form">
+        <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+          無料でメール相談する
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+  </div>
+</section>
+
+<hr class="pattern-divider">
+
+
+<!-- ==================================================================
+     PATTERN 4 — RED (all fail, 要対応 0/3)
+     ================================================================== -->
+<section id="pattern-red" aria-labelledby="p4-label">
+  <div class="pattern-label">
+    <span class="badge red">Pattern 4 / 全不合格</span>
+    <h2 id="p4-label">SPF・DMARC 未設定／DKIM 未検出</h2>
+    <p>要対応 ・ 3項目中0項目クリア ・ 赤シグナル</p>
+  </div>
+
+  <div class="container">
+    <header class="hero">
+      <h1>30秒でメール到達リスクを診断</h1>
+      <p class="lead">ドメインを入力するだけで、SPF・DKIM・DMARC の設定状況を確認できます。</p>
+
+      <div class="hero-badges" aria-label="サービスの特徴">
+        <span class="hero-badge">30秒で完了</span>
+        <span class="hero-badge">無料</span>
+        <span class="hero-badge">登録不要</span>
+      </div>
+
+      <form class="check-card" onsubmit="event.preventDefault()" role="search">
+        <div class="input-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <input id="d4" type="text" value="example-none.com" aria-label="ドメイン名">
+        </div>
+        <button type="submit" class="btn-primary">診断する</button>
+      </form>
+      <p class="check-note">入力したドメイン情報は保存されません</p>
+    </header>
+
+    <section class="verdict is-red" aria-live="polite">
+      <div class="verdict-state">
+        <span class="verdict-label">
+          <span class="lbl-dot" aria-hidden="true"></span>
+          要対応
+        </span>
+        <div class="check-progress" aria-label="達成率: 3項目中0項目クリア">
+          <span class="cp-label">達成率</span>
+          <span class="check-marks" aria-hidden="true">
+            <span class="cm"></span>
+            <span class="cm"></span>
+            <span class="cm"></span>
+          </span>
+          <span class="cp-num tabular">3項目中0項目クリア</span>
+        </div>
+      </div>
+      <div class="verdict-right">
+        <div class="signals" role="group" aria-label="プロトコル別シグナル">
+          <div class="signal is-off" aria-label="SPF: 未設定">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">SPF</span>
+            <span class="state">未設定</span>
+          </div>
+          <div class="signal is-off" aria-label="DKIM: 未検出">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">DKIM</span>
+            <span class="state">未検出</span>
+          </div>
+          <div class="signal is-off" aria-label="DMARC: 未設定">
+            <span class="lamp" aria-hidden="true"></span>
+            <span class="label">DMARC</span>
+            <span class="state">未設定</span>
+          </div>
+        </div>
+        <p class="verdict-summary">メール認証の設定がまだ整っていない状態です。取引先に送ったメールが迷惑メールフォルダに振り分けられる可能性があります。</p>
+      </div>
+    </section>
+
+    <div class="results-grid">
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+            </div>
+            <div>
+              <h3>SPF（送信元サーバーの許可）</h3>
+              <p class="sub">Sender Policy Framework</p>
+            </div>
+          </div>
+          <span class="status-pill is-red"><span class="dot" aria-hidden="true"></span>未設定</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">SPF の設定が見つかりませんでした。送信元サーバーを許可するための設定が必要です。</p>
+          <div class="why-block is-red">
+            <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
+            <p class="why-body">SPF が無いと、御社の正規のメールサーバーかどうか判別できず、第三者が御社の名前でメールを送ることができてしまいます。</p>
+            <div class="why-divider"></div>
+            <a href="#consult-p4" class="why-cta">
+              メールで詳細を相談する
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v6c0 5 4 9 9 10 5-1 9-5 9-10V7l-9-5z"/><path d="M9 12l2 2 4-4"/></svg>
+            </div>
+            <div>
+              <h3>DKIM（電子サイン）</h3>
+              <p class="sub">DomainKeys Identified Mail</p>
+            </div>
+          </div>
+          <span class="status-pill is-red"><span class="dot" aria-hidden="true"></span>未設定</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">Google Workspace・Microsoft 365・エックスサーバー など主要なメールサービス28種類の設定で確認しましたが、見つかりませんでした。<br><span style="font-size:12px;color:var(--muted-soft);">※ さくらインターネット・ロリポップ・Amazon SES 等の一部サービスは独自形式の設定を使うため、ドメインだけでは判定できないことがあります。</span></p>
+          <div class="why-block is-red">
+            <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
+            <p class="why-body">DKIM が見つからないと、取引先のGmail/Outlookなどで迷惑メールフォルダに振り分けられたり、メールが途中で書き換えられても気づけない状態になる可能性があります。</p>
+            <div class="why-divider"></div>
+            <a href="#consult-p4" class="why-cta">
+              メールで詳細を相談する
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <article class="result-card">
+        <header class="result-head">
+          <div class="result-title">
+            <div class="result-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+            </div>
+            <div>
+              <h3>DMARC（運用ポリシー）</h3>
+              <p class="sub">Domain-based Message Authentication</p>
+            </div>
+          </div>
+          <span class="status-pill is-red"><span class="dot" aria-hidden="true"></span>未設定</span>
+        </header>
+        <div class="result-body">
+          <p class="explain">DMARC の設定が見つかりませんでした。なりすましメールがあった場合のルールがまだ定まっていません。</p>
+          <div class="why-block is-red">
+            <p class="why-title"><span class="mark">⚠</span> なぜ問題か</p>
+            <p class="why-body">現在の設定では、なりすましメールが取引先に届いてしまう可能性があります。被害検知レポートも受け取れません。</p>
+            <div class="why-divider"></div>
+            <a href="#consult-p4" class="why-cta">
+              メールで詳細を相談する
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- CONSULT FORM -->
+    <section class="consult-block" id="consult-p4" aria-labelledby="consult-p4-title">
+      <h3 id="consult-p4-title">無料でメール相談する</h3>
+      <p class="consult-lead">3項目すべて新規設定が必要です。御社の利用サービスに応じた具体的な手順をメールでご案内します。</p>
+      <div class="consult-form">
+        <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+          無料でメール相談する
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <p class="edu-title">学習コンテンツ</p>
+    <div class="accordion">
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">01</span> SPF・DKIM・DMARC の仕組み</h4>
+          <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p>3つは「メールの本人確認」を多層で行う仕組みです。それぞれ役割が違い、揃って初めて効果を発揮します。</p>
+          <div class="protocol-row">
+            <div class="pcard"><strong>SPF</strong><p>送ってOKなサーバーを登録する「住所録」。許可外の送信元を見分けます。</p></div>
+            <div class="pcard"><strong>DKIM</strong><p>メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。</p></div>
+            <div class="pcard"><strong>DMARC</strong><p>SPF/DKIMの結果を踏まえた「運用ルール」。不正メールの扱いを決めます。</p></div>
+          </div>
+        </div>
+      </details>
+      <details open>
+        <summary aria-expanded="true">
+          <h4><span class="num-circle">02</span> なぜ設定が必要なのか</h4>
+          <span class="meta"><span>読了 2分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p>Gmail / Yahoo / Outlook は 2024年以降、送信ドメインの認証を強く求めるようになりました。3項目すべて未設定の場合、相手の迷惑メールフォルダ行き、または配信拒否となる可能性があります。</p>
+          <ul>
+            <li>取引先にメールが届かない状況を防ぐ</li>
+            <li>自社ドメインのなりすまし被害を抑える</li>
+            <li>「セキュリティ意識の高い会社」という信頼を維持する</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">03</span> 設定の優先順位</h4>
+          <span class="meta"><span>読了 1分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <ol>
+            <li><strong>SPF</strong> — DNSにTXTレコードを1行追加するだけ。最初に必ず設定</li>
+            <li><strong>DKIM</strong> — 利用中のメールサービス側で署名を有効化</li>
+            <li><strong>DMARC</strong> — まずは監視モードから開始</li>
+          </ol>
+        </div>
+      </details>
+      <details>
+        <summary aria-expanded="false">
+          <h4><span class="num-circle">04</span> よくある質問</h4>
+          <span class="meta"><span>読了 3分</span><span class="toggle" aria-hidden="true">+</span></span>
+        </summary>
+        <div class="panel">
+          <p><strong>Q. 設定の反映には時間がかかりますか？</strong></p>
+          <p>DNSの伝播に通常15分〜数時間。反映後に再診断してください。</p>
+          <p><strong>Q. 自社で対応するのと相談するのは何が違いますか？</strong></p>
+          <p>3項目の連携設定は意外と落とし穴が多く（include の上限、selector の指定、p=quarantine 移行のタイミングなど）、最初だけ伴走支援を受けると安全です。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- CONSULT FORM (bottom) -->
+    <section class="consult-block">
+      <h3>無料でメール相談する</h3>
+      <p class="consult-lead">気になる点や設定方法など、お気軽にメールでご相談ください。</p>
+      <div class="consult-form">
+        <a href="https://forms.gle/fBEiPFxku2cdnwtL8" target="_blank" rel="noopener" class="btn-cta">
+          無料でメール相談する
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </section>
+  </div>
+</section>
+
+</body>
+</html>

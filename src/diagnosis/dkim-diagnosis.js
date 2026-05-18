@@ -29,9 +29,10 @@ export function diagnoseDKIM(dkimRecord, selector = null) {
       return {
         status: 'not_configured',
         level: 'warning',
-        message: '未設定',
-        explanation: 'メールが途中で書き換えられても気づかれず、「振込先を変更しました」という偽の内容に改ざんされる危険があります。',
-        whatIs: 'メールに会社の実印を押す機能。割印のように改ざん防止する',
+        message: '未検出',
+        explanation: 'Google Workspace・Microsoft 365・エックスサーバー など主要なメールサービス28種類の設定で確認しましたが、見つかりませんでした。',
+        explanationNote: '※ さくらインターネット・ロリポップ・Amazon SES 等の一部サービスは独自形式の設定を使うため、ドメインだけでは判定できないことがあります。',
+        whatIs: 'メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。',
         details: {
           selector,
           found: false
@@ -66,8 +67,8 @@ export function diagnoseDKIM(dkimRecord, selector = null) {
       status: 'configured',
       level,
       message: '設定済み',
-      explanation: null,
-      whatIs: 'メールに会社の実印を押す機能。割印のように改ざん防止する',
+      explanation: '公開鍵が発見でき、メールへの署名が検証可能な状態です。',
+      whatIs: 'メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。',
       details: {
         selector,
         parsed,
@@ -83,7 +84,7 @@ export function diagnoseDKIM(dkimRecord, selector = null) {
       level: 'error',
       message: 'エラー',
       explanation: `DKIMレコードの解析中にエラーが発生しました: ${error.message}`,
-      whatIs: 'メールに会社の実印を押す機能。割印のように改ざん防止する',
+      whatIs: 'メールに付ける「電子サイン」。改ざんと送信元のなりすましを検出します。',
       details: {
         selector,
         error: error.message
