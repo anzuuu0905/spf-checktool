@@ -714,19 +714,19 @@ async function performDiagnosis() {
     const verdict = determineVerdict(spfDiagnosis, dkimDiagnosis, dmarcDiagnosis);
     applyVerdict(verdict);
 
-    // 信号機シグナル
+    // 信号機シグナル — 未検出/未設定は赤（要対応）で明示
     applySignal(
       'spf',
-      verdict.spfDone ? 'green' : 'off',
+      verdict.spfDone ? 'green' : 'red',
       verdict.spfDone ? '設定済み' : '未設定'
     );
     applySignal(
       'dkim',
-      verdict.dkimDone ? 'green' : 'off',
+      verdict.dkimDone ? 'green' : 'red',
       verdict.dkimDone ? '設定済み' : '未検出'
     );
-    // DMARC: 完全設定（quarantine/reject）= green、監視モード（p=none）= amber、未設定 = off
-    let dmarcLamp = 'off';
+    // DMARC: 完全設定（quarantine/reject）= green、監視モード（p=none）= amber、未設定 = red
+    let dmarcLamp = 'red';
     let dmarcLabel = '未設定';
     if (verdict.dmarcDone) {
       dmarcLamp = 'green';
