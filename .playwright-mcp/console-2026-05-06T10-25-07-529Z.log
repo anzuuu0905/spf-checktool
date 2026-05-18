@@ -1,9 +1,0 @@
-[   23590ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
-    at getDomainRecords (http://localhost:5173/src/api/dns-resolver.js:228:15)
-    at async HTMLButtonElement.performDiagnosis (http://localhost:5173/src/main.js:185:21) @ http://localhost:5173/src/main.js:207
-[  825004ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
-    at getDomainRecords (http://localhost:5173/src/api/dns-resolver.js:228:15)
-    at async HTMLButtonElement.performDiagnosis (http://localhost:5173/src/main.js:185:21) @ http://localhost:5173/src/main.js:207
-[  870772ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
-    at getDomainRecords (http://localhost:5173/src/api/dns-resolver.js:228:15)
-    at async HTMLButtonElement.performDiagnosis (http://localhost:5173/src/main.js:185:21) @ http://localhost:5173/src/main.js:207

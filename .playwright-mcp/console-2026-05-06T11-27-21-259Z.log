@@ -1,7 +1,0 @@
-[    9624ms] [ERROR] 診断エラー: Error: ドメインが見つかりません
-    at getDomainRecords (http://localhost:5177/src/api/dns-resolver.js:261:15)
-    at async HTMLButtonElement.performDiagnosis (http://localhost:5177/src/main.js?t=1778066833667:209:21) @ http://localhost:5177/src/main.js?t=1778066833667:231
-[    9625ms] [LOG] showError called with: ドメインが見つかりません at 2026-05-06T11:27:30.883Z @ http://localhost:5177/src/main.js?t=1778066833667:29
-[    9625ms] [LOG] Error message element classes after remove: error-message @ http://localhost:5177/src/main.js?t=1778066833667:38
-[    9625ms] [LOG] Setting timeout for 5 seconds from now @ http://localhost:5177/src/main.js?t=1778066833667:39
-[   14626ms] [LOG] Error timeout fired at 2026-05-06T11:27:35.885Z - adding hidden class @ http://localhost:5177/src/main.js?t=1778066833667:43
