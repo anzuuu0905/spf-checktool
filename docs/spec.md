@@ -53,7 +53,7 @@
 
 ## 技術スタック推奨
 - **フロントエンド**: 静的HTML + Vanilla JavaScript + CSS
-- **デザインシステム**: Cursor風デザイン（既存の design.md を適用）
+- **デザインシステム**: Cursor風デザイン（`docs/design.md` を適用）
 - **DNS検証**: Google Public DNS API（`dns.google.com`）を使用
 - **テスト**: Vitest（単体テスト）+ Playwright（E2Eテスト）
 - **ビルドツール**: Vite
