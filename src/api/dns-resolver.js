@@ -118,16 +118,22 @@ export async function getSPFRecord(domain) {
 }
 
 /**
- * DKIMレコードを取得（複数のセレクターを並列試行）
+ * DKIMレコードを取得
  *
- * Sprint 5: 28セレクターを Promise.all で並列実行し、
- * 全体の待ち時間を 1 秒以内に抑える。
+ * - customSelector が指定されればそのセレクターのみクエリ
+ * - 未指定なら主要メールサービスのセレクター辞書を Promise.all で並列試行
+ *
+ * 「設定済み」と判定するのは v=DKIM1 を含むレコードのみ（RFC 6376 準拠）。
+ * v=DKIM1 を含まない曖昧なレコードは未検出扱い（「迷ったら未検出」方針）。
  *
  * @param {string} domain - ドメイン名
+ * @param {string|null} customSelector - 任意指定のセレクター名（空欄なら自動検出）
  * @returns {Promise<Array<Object>>} DKIMレコードとセレクターの配列
  */
-export async function getDKIMRecords(domain) {
-  const selectors = checkCommonSelectors();
+export async function getDKIMRecords(domain, customSelector = null) {
+  const selectors = customSelector
+    ? [customSelector]
+    : checkCommonSelectors();
 
   const results = await Promise.all(
     selectors.map(async (selector) => {
@@ -139,14 +145,12 @@ export async function getDKIMRecords(domain) {
           return null;
         }
 
-        // DKIMレコードとして妥当なものを探す
-        const dkimRecord = records.find(record =>
-          record.includes('p=') || record.includes('v=DKIM1')
-        );
+        // v=DKIM1 を含むレコードのみ DKIM として採用（RFC 6376）
+        const dkimRecord = records.find(record => /v\s*=\s*DKIM1/i.test(record));
 
         return dkimRecord ? { selector, record: dkimRecord } : null;
       } catch {
-        // 個別セレクターのエラーは無視
+        // 個別セレクターのエラーは無視（「迷ったら未検出」）
         return null;
       }
     })
@@ -214,9 +218,10 @@ function extractDomain(input) {
 /**
  * ドメインの全診断情報を取得
  * @param {string} domain - ドメイン名
+ * @param {string|null} customSelector - 任意指定のDKIMセレクター名（空欄なら自動検出）
  * @returns {Promise<Object>} 診断情報
  */
-export async function getDomainRecords(domain) {
+export async function getDomainRecords(domain, customSelector = null) {
   // テスト用のモックデータ
   if (domain === 'test-no-spf.example.com') {
     return {
@@ -269,7 +274,7 @@ export async function getDomainRecords(domain) {
     // 並列でDNSクエリを実行
     const [spfRecord, dkimRecords, dmarcRecord] = await Promise.all([
       getSPFRecord(normalizedDomain),
-      getDKIMRecords(normalizedDomain),
+      getDKIMRecords(normalizedDomain, customSelector),
       getDMARCRecord(normalizedDomain)
     ]);
 

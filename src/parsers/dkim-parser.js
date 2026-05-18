@@ -122,21 +122,29 @@ export function getKeyType(parsedDKIM) {
 /**
  * 複数のDKIMセレクターをチェック
  *
- * Sprint 5: 主要メールサービス28種類をカバーするセレクターリスト
- * (Google Workspace / Microsoft 365 / エックスサーバー / MailChimp / SendGrid /
- *  HubSpot / Zoho / Fastmail / ProtonMail / Zendesk / Klaviyo 等)
+ * 主要メールサービスをカバーするセレクター辞書。
+ * セレクター名は外部から DNS で列挙できない仕様のため、
+ * 既知のメールサービスごとに「鍵を置いている場所の名前」を辞書として保持する。
  *
- * @returns {Array<string>} 確認対象のセレクター配列（28個）
+ * Google は年月ベースのセレクター（例: 20230601）を使うため、歴代の代表値を含める。
+ *
+ * 詳細な一覧は docs/dkim-selectors-reference.md を参照。
+ *
+ * @returns {Array<string>} 確認対象のセレクター配列
  */
 export function checkCommonSelectors() {
   return [
-    // Google / Microsoft
-    'default', 'google', 'selector1', 'selector2',
+    // Google Workspace（汎用）
+    'google',
+    // Google Workspace（年月ベース。Google は実運用で年月セレクターを使う）
+    '20230601', '20210112', '20161025',
+    // Microsoft 365
+    'selector1', 'selector2',
     // SendGrid / Twilio
     's1', 's2',
     // Mailchimp / Mandrill
     'k1', 'k2', 'k3', 'mte1', 'mte2',
-    // Yahoo / 汎用
+    // Yahoo / 汎用（鍵長ベース）
     's1024', 's2048',
     // HubSpot
     'hs1', 'hs2',
@@ -153,6 +161,6 @@ export function checkCommonSelectors() {
     // Klaviyo
     'kl',
     // 汎用
-    'dkim'
+    'default', 'dkim'
   ];
 }

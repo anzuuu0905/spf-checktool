@@ -15,6 +15,7 @@ import { diagnoseDMARC } from './diagnosis/dmarc-diagnosis.js';
 // DOM 要素
 // ====================================================================
 const domainInput = document.getElementById('domain-input');
+const selectorInput = document.getElementById('selector-input');
 const diagnoseButton = document.getElementById('diagnose-button');
 const diagnosisForm = document.getElementById('diagnosis-form');
 const errorMessage = document.getElementById('error-message');
@@ -90,17 +91,68 @@ function setLoading(show) {
 
 function validateDomain(domain) {
   if (!domain || domain.trim() === '') {
-    return 'ドメインを入力してください';
+    return 'ドメイン名を入力してください（例: example.com）';
   }
   const trimmed = domain.trim();
 
-  // 全角スペース
-  if (trimmed.match(/[　]/)) {
-    return 'ドメインを入力してください';
+  // 半角・全角スペースを含む
+  if (/[\s　]/.test(trimmed)) {
+    return '空白を含まないドメイン名を入力してください（例: example.com）';
   }
-  // 日本語以外の全角文字
-  if (trimmed.match(/[^\x00-\x7F]/) && !trimmed.match(/[぀-ゟ゠-ヿ一-龯]/)) {
-    return '正しいドメインを入力してください';
+
+  // メールアドレス形式（@を含む）
+  if (trimmed.includes('@')) {
+    return 'メールアドレスではなく、ドメイン名（@より後ろの部分）を入力してください（例: example.com）';
+  }
+
+  // URL 形式（http:// https:// で始まる、または /:?# を含む）
+  if (/^https?:\/\//i.test(trimmed)) {
+    return 'URL ではなくドメイン名のみを入力してください（例: example.com）';
+  }
+  if (/[\/:?#]/.test(trimmed)) {
+    return 'ドメイン名のみを入力してください。パスや「:」「?」「#」は不要です（例: example.com）';
+  }
+
+  // 全角文字（日本語IDNは除く）
+  const hasFullWidthAscii = /[！-～]/.test(trimmed); // 全角英数記号
+  if (hasFullWidthAscii) {
+    return '半角英数字のドメイン名を入力してください（例: example.com）';
+  }
+
+  // ドットを含まない（TLD なし）
+  if (!trimmed.includes('.')) {
+    return 'ドットを含む正しいドメイン名を入力してください（例: example.com）';
+  }
+
+  // 先頭/末尾がドット・ハイフン
+  if (/^[.-]|[.-]$/.test(trimmed)) {
+    return '正しいドメイン名を入力してください（例: example.com）';
+  }
+
+  // 連続ドット
+  if (/\.\./.test(trimmed)) {
+    return '正しいドメイン名を入力してください（例: example.com）';
+  }
+
+  return null;
+}
+
+function validateSelector(selector) {
+  if (!selector || selector.trim() === '') {
+    return null; // 任意項目なので空でもOK
+  }
+  const trimmed = selector.trim();
+
+  if (/[\s　]/.test(trimmed)) {
+    return 'セレクター名に空白を含めることはできません';
+  }
+  // セレクターは英数字・ハイフン・アンダースコア・ドットのみ許容
+  if (!/^[a-zA-Z0-9._-]+$/.test(trimmed)) {
+    return 'セレクター名は半角英数字・ハイフン・アンダースコア・ドットのみ使用できます（例: google, selector1, 20230601）';
+  }
+  // _domainkey が含まれていたらユーザーが間違えて入れた可能性あり
+  if (trimmed.includes('_domainkey')) {
+    return 'セレクター名のみを入力してください。「_domainkey」部分は自動で付与されます（例: google）';
   }
   return null;
 }
@@ -134,22 +186,29 @@ function determineVerdict(spf, dkim, dmarc) {
       summary: '3項目すべて設定済みです。',
       spfDone: true,
       dkimDone: true,
-      dmarcDone: true
+      dmarcDone: true,
+      dmarcConfigured: true,
+      dmarcPolicy: dmarcPolicy
     };
   }
 
-  // パターン2: SPF + DKIM 合格、DMARC なし or 監視モード
+  // パターン2: SPF + DKIM 合格、DMARC は監視モード（p=none）または未設定
   if (spfOk && dkimOk) {
+    const summary = dmarcConfigured
+      ? 'SPF と DKIM は設定済みです。DMARC は監視モード（p=none）です。p=quarantine 以上に強化すると、なりすまし対策がより確実になります。'
+      : 'SPF と DKIM は設定済みです。DMARC を追加設定すると、なりすまし対策がより確実になります。';
     return {
       pattern: 2,
       color: 'amber',
       label: '要改善',
-      progressNum: 2,
-      progressText: '3項目中2項目クリア',
-      summary: 'SPF と DKIM は設定済みです。DMARC を追加設定すると、なりすまし対策がより確実になります。',
+      progressNum: dmarcConfigured ? 2.5 : 2,
+      progressText: dmarcConfigured ? '3項目中2.5項目クリア（DMARC強化推奨）' : '3項目中2項目クリア',
+      summary,
       spfDone: true,
       dkimDone: true,
-      dmarcDone: false
+      dmarcDone: false,
+      dmarcConfigured,
+      dmarcPolicy
     };
   }
 
@@ -164,7 +223,9 @@ function determineVerdict(spf, dkim, dmarc) {
       summary: 'SPF は設定済みですが、DKIM と DMARC の設定が確認できませんでした。この状態では、取引先に送ったメールが迷惑メールフォルダに振り分けられる可能性があります。',
       spfDone: true,
       dkimDone: false,
-      dmarcDone: false
+      dmarcDone: false,
+      dmarcConfigured,
+      dmarcPolicy
     };
   }
 
@@ -178,7 +239,9 @@ function determineVerdict(spf, dkim, dmarc) {
     summary: 'メール認証の設定がまだ整っていない状態です。取引先に送ったメールが迷惑メールフォルダに振り分けられる可能性があります。',
     spfDone: spfOk,
     dkimDone: dkimOk,
-    dmarcDone: dmarcConfigured
+    dmarcDone: dmarcConfigured,
+    dmarcConfigured,
+    dmarcPolicy
   };
 }
 
@@ -373,10 +436,10 @@ function updateConsultTopLead(pattern) {
       lead.textContent = 'DMARC を追加で設定するには、最初は監視モードから始めれば配信に影響はありません。具体的な手順はメールでご案内します。';
       break;
     case 3:
-      lead.textContent = 'DKIM・DMARC の追加設定方法、御社の利用サービス（Google Workspace / Microsoft 365 など）に応じた手順をメールでご案内します。';
+      lead.textContent = 'DKIM・DMARC の追加設定方法、貴社の利用サービス（Google Workspace / Microsoft 365 など）に応じた手順をメールでご案内します。';
       break;
     case 4:
-      lead.textContent = '3項目すべて新規設定が必要です。御社の利用サービスに応じた具体的な手順をメールでご案内します。';
+      lead.textContent = '3項目すべて新規設定が必要です。貴社の利用サービスに応じた具体的な手順をメールでご案内します。';
       break;
     default:
       lead.textContent = '気になる点や設定方法など、お気軽にご相談ください。';
@@ -422,6 +485,14 @@ async function performDiagnosis() {
     return;
   }
 
+  const customSelector = selectorInput ? selectorInput.value.trim() : '';
+  const selectorError = validateSelector(customSelector);
+  if (selectorError) {
+    showError(selectorError);
+    isPerformingDiagnosis = false;
+    return;
+  }
+
   clearError();
   setLoading(true);
 
@@ -429,7 +500,7 @@ async function performDiagnosis() {
     const isTestDomain = domain === 'perfect.example.com' || domain === 'allgood.test.com';
     const records = isTestDomain
       ? await getDomainRecordsWithMock(domain)
-      : await getDomainRecords(domain);
+      : await getDomainRecords(domain, customSelector || null);
 
     const spfDiagnosis = diagnoseSPF(records.spf);
     const dkimDiagnosis = diagnoseDKIMMultiple(records.dkim);
@@ -450,18 +521,24 @@ async function performDiagnosis() {
       verdict.dkimDone ? 'green' : 'off',
       verdict.dkimDone ? '設定済み' : '未検出'
     );
-    applySignal(
-      'dmarc',
-      verdict.dmarcDone ? 'green' : 'off',
-      verdict.dmarcDone ? '設定済み' : '未設定'
-    );
+    // DMARC: 完全設定（quarantine/reject）= green、監視モード（p=none）= amber、未設定 = off
+    let dmarcLamp = 'off';
+    let dmarcLabel = '未設定';
+    if (verdict.dmarcDone) {
+      dmarcLamp = 'green';
+      dmarcLabel = '設定済み';
+    } else if (verdict.dmarcConfigured) {
+      dmarcLamp = 'amber';
+      dmarcLabel = '監視のみ';
+    }
+    applySignal('dmarc', dmarcLamp, dmarcLabel);
 
     // SPF カード
     updateResultCard('spf', spfDiagnosis, {
       pillColor: verdict.spfDone ? 'green' : 'red',
       recordText: verdict.spfDone ? formatSPFRecord(records.spf) : null,
       whyBodyText: !verdict.spfDone
-        ? 'SPF が無いと、御社の正規のメールサーバーかどうか判別できず、第三者が御社の名前でメールを送ることができてしまいます。'
+        ? 'SPF が無いと、貴社の正規のメールサーバーかどうか判別できず、第三者が貴社の名前でメールを送ることができてしまいます。'
         : null
     });
 
@@ -477,20 +554,27 @@ async function performDiagnosis() {
     });
 
     // DMARC カード
-    // 判定: パターン2(黄)のDMARC は amber、それ以外でDMARC問題ありは red
+    // 判定: 完全設定(quarantine/reject) = green、監視モード(p=none) = amber、未設定 = red
     let dmarcPillColor = 'red';
     if (verdict.dmarcDone) {
       dmarcPillColor = 'green';
+    } else if (verdict.dmarcConfigured) {
+      // p=none で設定済み → amber（設定はされているが強化推奨）
+      dmarcPillColor = 'amber';
     } else if (verdict.pattern === 2) {
       dmarcPillColor = 'amber';
     }
+    // DMARC レコードが存在すれば（policy 問わず）レコード表示する
+    const dmarcRecordVisible = verdict.dmarcDone || verdict.dmarcConfigured;
     updateResultCard('dmarc', dmarcDiagnosis, {
       pillColor: dmarcPillColor,
-      recordText: verdict.dmarcDone ? formatDMARCRecord(records.dmarc) : null,
+      recordText: dmarcRecordVisible ? formatDMARCRecord(records.dmarc) : null,
       whyBodyText: !verdict.dmarcDone
-        ? (verdict.pattern === 2
-            ? 'SPF と DKIM の結果を踏まえた運用ポリシーがまだ無く、なりすましメールが届いた場合の対処が決まっていません。'
-            : '現在の設定では、なりすましメールが取引先に届いてしまう可能性があります。あとから問題があったか確認するレポートも受け取れません。')
+        ? (verdict.dmarcConfigured
+            ? 'DMARC は監視モード（p=none）で設定されています。なりすましメールが届いた場合の対処（隔離・拒否）は行われません。p=quarantine 以上に強化すると、なりすましメールが受信側で自動的に隔離・拒否されるようになります。'
+            : (verdict.pattern === 2
+                ? 'SPF と DKIM の結果を踏まえた運用ポリシーがまだ無く、なりすましメールが届いた場合の対処が決まっていません。'
+                : '現在の設定では、なりすましメールが取引先に届いてしまう可能性があります。あとから問題があったか確認するレポートも受け取れません。'))
         : null
     });
 
