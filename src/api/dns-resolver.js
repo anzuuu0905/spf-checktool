@@ -93,26 +93,30 @@ async function queryDNS(domain, type = 'TXT') {
  * @returns {Promise<string|null>} SPFレコード文字列
  */
 export async function getSPFRecord(domain) {
+  let records;
   try {
     // まず直接ドメインのTXTレコードを確認
-    const records = await queryDNS(domain, 'TXT');
-    const spfRecord = records.find(record => record.startsWith('v=spf1'));
-
-    if (spfRecord) {
-      return spfRecord;
-    }
-
-    // 見つからなければ _spf.domain も確認
-    const spfSubdomain = `_spf.${domain}`;
-    const spfRecords = await queryDNS(spfSubdomain, 'TXT');
-    const altSpfRecord = spfRecords.find(record => record.startsWith('v=spf1'));
-
-    return altSpfRecord || null;
+    records = await queryDNS(domain, 'TXT');
   } catch (error) {
+    // メインドメインの NXDOMAIN はそのまま伝播（ドメイン自体が存在しない）
     if (error.message === 'DOMAIN_NOT_FOUND') {
       throw error;
     }
-    // その他のエラーの場合はnullを返す
+    return null;
+  }
+
+  const spfRecord = records.find(record => record.startsWith('v=spf1'));
+  if (spfRecord) {
+    return spfRecord;
+  }
+
+  // 見つからなければ _spf.domain も確認（NXDOMAIN はここでは無視）
+  try {
+    const spfSubdomain = `_spf.${domain}`;
+    const spfRecords = await queryDNS(spfSubdomain, 'TXT');
+    return spfRecords.find(record => record.startsWith('v=spf1')) || null;
+  } catch {
+    // _spf サブドメインが存在しないのは正常（SPF未設定として扱う）
     return null;
   }
 }
@@ -202,18 +206,10 @@ export async function getDMARCRecord(domain) {
   try {
     const dmarcDomain = `_dmarc.${domain}`;
     const records = await queryDNS(dmarcDomain, 'TXT');
-    const dmarcRecord = records.find(record => record.startsWith('v=DMARC1'));
-
-    return dmarcRecord || null;
-  } catch (error) {
-    if (error.message === 'DOMAIN_NOT_FOUND') {
-      // メインドメインが存在しない場合はエラーを伝播
-      const mainRecords = await queryDNS(domain, 'A');
-      if (mainRecords.length === 0) {
-        throw error;
-      }
-    }
-    // DMARCレコードが存在しないだけの場合はnullを返す
+    return records.find(record => record.startsWith('v=DMARC1')) || null;
+  } catch {
+    // _dmarc サブドメインが存在しない = DMARC 未設定。ドメイン自体の存在判定は
+    // SPF/MX 側のクエリ結果に任せる（A レコード未設定ドメインを誤判定しないため）
     return null;
   }
 }
