@@ -169,7 +169,11 @@ function validateSelector(selector) {
 
 function determineVerdict(spf, dkim, dmarc) {
   const spfOk = spf.status === 'configured';
-  const dkimOk = dkim.status === 'configured';
+  const dkimConfigured = dkim.status === 'configured';
+  // dkimOk はパターン判定用（設定の有無）
+  const dkimOk = dkimConfigured;
+  // dkimFullPass は表示用（鍵長警告等が無い完全合格状態）
+  const dkimFullPass = dkimConfigured && dkim.level !== 'warning';
   const dmarcConfigured = dmarc.status === 'configured';
 
   // DMARC の policy が quarantine 以上か判定
@@ -187,6 +191,8 @@ function determineVerdict(spf, dkim, dmarc) {
       summary: '3項目すべて設定済みです。',
       spfDone: true,
       dkimDone: true,
+      dkimConfigured,
+      dkimFullPass,
       dmarcDone: true,
       dmarcConfigured: true,
       dmarcPolicy: dmarcPolicy
@@ -207,6 +213,8 @@ function determineVerdict(spf, dkim, dmarc) {
       summary,
       spfDone: true,
       dkimDone: true,
+      dkimConfigured,
+      dkimFullPass,
       dmarcDone: false,
       dmarcConfigured,
       dmarcPolicy
@@ -224,6 +232,8 @@ function determineVerdict(spf, dkim, dmarc) {
       summary: 'SPF は設定済みですが、DKIM と DMARC の設定が確認できませんでした。この状態では、取引先に送ったメールが迷惑メールフォルダに振り分けられる可能性があります。',
       spfDone: true,
       dkimDone: false,
+      dkimConfigured,
+      dkimFullPass,
       dmarcDone: false,
       dmarcConfigured,
       dmarcPolicy
@@ -240,6 +250,8 @@ function determineVerdict(spf, dkim, dmarc) {
     summary: 'メール認証の設定がまだ整っていない状態です。取引先に送ったメールが迷惑メールフォルダに振り分けられる可能性があります。',
     spfDone: spfOk,
     dkimDone: dkimOk,
+    dkimConfigured,
+    dkimFullPass,
     dmarcDone: dmarcConfigured,
     dmarcConfigured,
     dmarcPolicy
@@ -334,7 +346,7 @@ function updateResultCard(type, diagnosis, options = {}) {
     pill.classList.add(`is-${options.pillColor || 'red'}`);
   }
   if (pillText) {
-    pillText.textContent = diagnosis.message || '';
+    pillText.textContent = options.pillTextOverride || diagnosis.message || '';
   }
 
   // legacy data-testid のためのアイコン要素（既存テスト互換）
@@ -720,11 +732,17 @@ async function performDiagnosis() {
       verdict.spfDone ? 'green' : 'red',
       verdict.spfDone ? '設定済み' : '未設定'
     );
-    applySignal(
-      'dkim',
-      verdict.dkimDone ? 'green' : 'red',
-      verdict.dkimDone ? '設定済み' : '未検出'
-    );
+    // DKIM: 完全合格 (level=success) = green、警告あり (鍵長等) = amber、未検出 = red
+    let dkimLamp = 'red';
+    let dkimLabel = '未検出';
+    if (verdict.dkimFullPass) {
+      dkimLamp = 'green';
+      dkimLabel = '設定済み';
+    } else if (verdict.dkimConfigured) {
+      dkimLamp = 'amber';
+      dkimLabel = '要強化';
+    }
+    applySignal('dkim', dkimLamp, dkimLabel);
     // DMARC: 完全設定（quarantine/reject）= green、監視モード（p=none）= amber、未設定 = red
     let dmarcLamp = 'red';
     let dmarcLabel = '未設定';
@@ -752,12 +770,24 @@ async function performDiagnosis() {
     // DKIM カード
     // 検出済み DKIM レコードがあれば最初のものを表示
     const dkimRecordText = records.dkim?.[0]?.record || null;
+    let dkimPillColor = 'red';
+    if (verdict.dkimFullPass) {
+      dkimPillColor = 'green';
+    } else if (verdict.dkimConfigured) {
+      dkimPillColor = 'amber';
+    }
+    // 鍵長警告等のメッセージを設定済みでも表示
+    let dkimWhyBody = null;
+    if (!verdict.dkimConfigured) {
+      dkimWhyBody = 'DKIM が見つからないと、取引先のGmail/Outlookなどで迷惑メールフォルダに振り分けられたり、メールが途中で書き換えられても気づけない状態になる可能性があります。';
+    } else if (!verdict.dkimFullPass && dkimDiagnosis.details?.warnings?.length) {
+      dkimWhyBody = dkimDiagnosis.details.warnings.join(' ') + ' 公開鍵を 2048bit 以上の RSA 鍵で再発行することを推奨します。';
+    }
     updateResultCard('dkim', dkimDiagnosis, {
-      pillColor: verdict.dkimDone ? 'green' : 'red',
-      recordText: verdict.dkimDone && dkimRecordText ? formatDKIMRecord(dkimRecordText) : null,
-      whyBodyText: !verdict.dkimDone
-        ? 'DKIM が見つからないと、取引先のGmail/Outlookなどで迷惑メールフォルダに振り分けられたり、メールが途中で書き換えられても気づけない状態になる可能性があります。'
-        : null
+      pillColor: dkimPillColor,
+      pillTextOverride: verdict.dkimConfigured && !verdict.dkimFullPass ? '設定済み（要強化）' : null,
+      recordText: verdict.dkimConfigured && dkimRecordText ? formatDKIMRecord(dkimRecordText) : null,
+      whyBodyText: dkimWhyBody
     });
 
     // DKIM 未検出時に MX 推測プロバイダーの案内を explain-note に上書き
